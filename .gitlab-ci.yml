@@ -1,5 +1,5 @@
 variables:
- PUBLISH_NUGET: "true"
+ PUBLISH_NUGET: "false"
  PROJECT_FOLDER: BigPayz.Client
 
 include:

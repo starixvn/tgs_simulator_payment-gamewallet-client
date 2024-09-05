@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EB5816A5-5B81-4B30-A413-7764E012C7BE}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.gitlab-ci.yml = .gitlab-ci.yml
 		CodeMaid.config = CodeMaid.config
 		nuget.config = nuget.config
 	EndProjectSection
