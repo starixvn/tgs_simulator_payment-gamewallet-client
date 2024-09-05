@@ -1,0 +1,8 @@
+variables:
+ PUBLISH_NUGET: "true"
+ PROJECT_FOLDER: BigPayz.Client
+
+include:
+ - project: ci/core-cicd
+   ref: main
+   file: nexcel.gitlab-ci.yml
