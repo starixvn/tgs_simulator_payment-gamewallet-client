@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace Payment.GameWallet.Client;
+﻿namespace Payment.GameWallet.Client;
 public record GameWalletDepositSettings(
     string MerchantCode,
     string MerchantSecurityCode,
@@ -12,5 +10,4 @@ public record GameWalletDepositSettings(
     string FailUrl,
     string Language,
     string ClientIP,
-    string Method,
-    string PaymentChannelType);
+    string Method);

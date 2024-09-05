@@ -12,7 +12,6 @@ internal class DepositProcessor(
     GameWalletHasher hasher,
     IPaymentClient paymentClient,
     TimeProvider timeProvider,
-    IConfiguration configuration,
     IOptions<GameWalletOptions> optionsAccessor)
     : IMessageProcessor<DepositRequest, DepositResponse>
 {
@@ -46,7 +45,6 @@ internal class DepositProcessor(
             ["l"]=settings.Language,
             ["c3"]=settings.ClientIP,
             ["mt"]=settings.Method,
-            ["pt"]=settings.PaymentChannelType
         };
 
         string[] content = [dict["m"], dict["r"], dict["c2"], dict["a"], dict["c1"], datetime.ToString("yyyyMMddHHmmss"), settings.MerchantSecurityCode, dict["c3"]];
@@ -58,7 +56,7 @@ internal class DepositProcessor(
             new GameWalletDepositResponse(
                 FormId: settings.Reference,
                 Amount: decimal.Parse(data.Amount),
-                RedirectUrl: new Uri($"https://{configuration.GetValue<string>("GameWallet:DepositApi")!}/Home/2.0/Deposit/?parameter={param}")
+                RedirectUrl: new Uri(_options.DepositUrl,$"Home/2.0/Deposit/?parameter={param}")
              ));
 
         await paymentClient.ScheduleAsync(
