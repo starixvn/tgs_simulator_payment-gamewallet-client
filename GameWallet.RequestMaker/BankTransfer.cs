@@ -16,7 +16,7 @@ internal class BankTransfer: IDepositHandler
             ["FailedReturnURL"] = "",
             ["HTTPPostURL"] = order.CallbackUrl.AbsoluteUri,
             ["Amount"] = order.Amount.ToString(),
-            ["Currency"] = settings.Currency,
+            ["Currency"] = settings.CurrencyCode,
             ["ItemID"] = order.FormId.ToString(),
             ["ItemDescription"] = order.ItemDescription,
             ["PlayerId"] = order.PlayerId,

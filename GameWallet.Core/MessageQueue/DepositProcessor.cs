@@ -4,12 +4,15 @@ using Tgs.Payment.Clients;
 using Tgs.Payment.Protos;
 using Payment.GameWallet.Client;
 using Valhalla.MessageQueue;
+using Microsoft.Extensions.Configuration;
 
 namespace Payment.GameWallet.MessageQueue;
 
 internal class DepositProcessor(
-    GameWalletClient gameWalletClient,
+    GameWalletHasher hasher,
     IPaymentClient paymentClient,
+    TimeProvider timeProvider,
+    IConfiguration configuration,
     IOptions<GameWalletOptions> optionsAccessor)
     : IMessageProcessor<DepositRequest, DepositResponse>
 {
@@ -25,31 +28,42 @@ internal class DepositProcessor(
             data.ApplyInfo,
             GameWalletUtility.SerializerOptions)!;
 
-        var order = new DepositOrder(
-            decimal.Parse(data.Amount),
-            new Uri(_options.CallbackBaseUrl,"deposit/callback"),
-            settings.FormId,
-            settings.PlayerId,
-            settings.ItemDescription);
+        var datetime = timeProvider.GetUtcNow();
 
-        var depositResponse = await gameWalletClient.DepositAsync(
-            settings,
-            order,
-            cancellationToken).ConfigureAwait(false);
+        var dict = new Dictionary<string, string>
+        {
+            ["m"]= settings.MerchantCode,
+            ["c1"]=settings.CurrencyCode,
+            ["b"]=settings.BankCode,
+            ["c2"]= settings.Customer,
+            ["r"]=settings.Reference.ToString(),
+            ["a"]= decimal.Parse(data.Amount).ToString("0.##"),
+            ["n"]="Depsoit For Player",
+            ["su"]=settings.SuccessUrl,
+            ["fu"]=settings.FailUrl,
+            ["d"]=datetime.ToString("yyyy-MM-dd HH:mm:sstt"),
+            ["c4"]= new Uri(_options.CallbackBaseUrl, "deposit/callback").ToString(),
+            ["l"]=settings.Language,
+            ["c3"]=settings.ClientIP,
+            ["mt"]=settings.Method,
+            ["pt"]=settings.PaymentChannelType
+        };
 
+        string[] content = [dict["m"], dict["r"], dict["c2"], dict["a"], dict["c1"], datetime.ToString("yyyyMMddHHmmss"), settings.MerchantSecurityCode, dict["c3"]];
+        var key = hasher.ComputeMd5(string.Join("", content));
+        dict["k"] = key;
+        var param = hasher.EncodeParam(JsonSerializer.Serialize(dict));
         var applyInfo = new GameWalletDepositApplyInfo(
             settings,
             new GameWalletDepositResponse(
-                depositResponse.Amount,
-                depositResponse.FormId,
-                depositResponse.RedirectUrl,
-                depositResponse.Transaction,
-                depositResponse.Token,
-                depositResponse.Currency));
+                FormId: settings.Reference,
+                Amount: decimal.Parse(data.Amount),
+                RedirectUrl: new Uri($"https://{configuration.GetValue<string>("GameWallet:DepositApi")!}/Home/2.0/Deposit/?parameter={param}")
+             ));
 
         await paymentClient.ScheduleAsync(
-            "tgs.payment.bigpayz.deposit.schedule.reject",
-            settings.FormId,
+            "tgs.payment.gamewallet.deposit.schedule.reject",
+            settings.Reference,
             DateTime.UtcNow.AddMinutes(60D),
             cancellationToken).ConfigureAwait(false);
 

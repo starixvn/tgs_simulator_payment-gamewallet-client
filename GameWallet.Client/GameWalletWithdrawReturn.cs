@@ -10,4 +10,6 @@ public record GameWalletWithdrawReturn
     public string Status { get; set; } = default!;
 
     public string Sign { get; set; } = default!;
+
+    public string ExtendData { get; set; } = default!;
 }

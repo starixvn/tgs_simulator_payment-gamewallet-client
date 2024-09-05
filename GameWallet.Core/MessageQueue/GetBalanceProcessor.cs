@@ -6,6 +6,7 @@ using Valhalla.MessageQueue;
 namespace Payment.GameWallet.MessageQueue;
 
 internal class GetBalanceProcessor(
+    GameWalletHasher hasher,
     GameWalletClient bigPayzClient)
     : IMessageProcessor<PaymentBalanceRequest, PaymentBalanceResponse>
 {
@@ -19,10 +20,15 @@ internal class GetBalanceProcessor(
             data.BrandPaymentSettings,
             GameWalletUtility.SerializerOptions)!;
 
+        var dict = new Dictionary<string, string>
+        {
+            ["Merchant"] = settings.MerchantCode,
+        };
+
+        var key = hasher.ComputeMd5(settings.SecurityCode);
+
         var result = await bigPayzClient.QueryBalanceAsync(
-            settings.MerchantCode,
-            settings.CurrencyCode,
-            settings.ApiKey,
+            dict,
             cancellationToken).ConfigureAwait(false);
 
         return new PaymentBalanceResponse

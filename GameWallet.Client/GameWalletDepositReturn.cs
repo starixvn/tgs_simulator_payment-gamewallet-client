@@ -9,9 +9,11 @@ public record GameWalletDepositReturn
 
     public Guid FormId { get; set; }
 
-    public string Status { get; set; } = default!;
+    public string StatusCode { get; set; } = default!;
 
-    public string Sign { get; set; } = default!;
+    public string StatusMessage { get; set; } = default!;
+
+    public string Key { get; set; } = default!;
 
     public string ExtendData { get; set; } = default!;
 }

@@ -5,6 +5,8 @@ using Payment.GameWallet.ApplicationServices;
 using Payment.GameWallet.Client;
 using Payment.GameWallet.ViewModels;
 using Tgs.ServiceUtility;
+using System.Net.Http.Headers;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Payment.GameWallet.Controllers;
 
@@ -20,7 +22,7 @@ public class WithdrawController : ControllerBase
     }
 
     [HttpPost("callback", Name = "NotifyWithdraw")]
-    [Consumes("application/x-www-form-urlencoded")]
+    [Consumes("application/json")]
     public async Task<string> WithdrawCallbackAsync(
     [FromServices] GameWalletHasher hasher,
         [FromServices] IGetService<GetWithdrawFormQuery, WithdrawForm?> getService,
@@ -29,7 +31,7 @@ public class WithdrawController : ControllerBase
         [FromForm] CallbackWithdrawViewModel source)
     {
         _logger.LogInformation("{source}", source);
-        var formId = Guid.Parse(source.RefId);
+        var formId = Guid.Parse(source.Reference);
 
         var withdrawForm = await getService
             .GetAsync(new(formId), HttpContext.RequestAborted)
@@ -41,9 +43,9 @@ public class WithdrawController : ControllerBase
             return "fail";
         }
 
-        var data = new string[] { source.InvoiceNo, source.Status.ToString(), source.Currency, source.Amount.ToString(), source.PaymentDate };
-        var sign = source.Signature;
-        var hash = hasher.ComputeHash(withdrawForm.ApplyInfo!.Settings.ApiKey, data);
+        var data = new string[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode, withdrawForm!.ApplyInfo!.Settings.MerchantSecurityCode };
+        var sign = source.Key;
+        var hash = hasher.ComputeMd5(string.Join("", data));
 
         _logger.LogInformation("Compute hash: {hash}, sign: {sign}", hash, sign);
 
@@ -53,15 +55,14 @@ public class WithdrawController : ControllerBase
             return "fail";
         }
 
-        var status = source.Status;
-
         var paymentReturn = new GameWalletWithdrawReturn()
         {
             FormId = formId,
-            ActualAmount = source.Amount,
+            ActualAmount = decimal.Parse(source.ActualAmount),
             Sign = sign,
-            ThirdPartyOrderNo = source.InvoiceNo,
+            ThirdPartyOrderNo = source.TransactionId,
             Status = source.StatusMessage,
+
         };
 
         var fsm = PaymentStateMachineFactory.CreateWithdrawStateMachine(withdrawForm.Status);
@@ -78,7 +79,7 @@ public class WithdrawController : ControllerBase
                         paymentReturn: JsonSerializer.Serialize(
                             paymentReturn,
                             GameWalletUtility.SerializerOptions),
-                        actualAmount: source.Amount,
+                        actualAmount: decimal.Parse(source.ActualAmount),
                         cancellationToken: HttpContext.RequestAborted).ConfigureAwait(false);
 
                     await paymentClient.PaidWithdrawAsync(
@@ -98,7 +99,7 @@ public class WithdrawController : ControllerBase
                         paymentReturn: JsonSerializer.Serialize(
                             paymentReturn,
                             GameWalletUtility.SerializerOptions),
-                        actualAmount: source.Amount,
+                        actualAmount: decimal.Parse(source.ActualAmount),
                         cancellationToken: HttpContext.RequestAborted).ConfigureAwait(false);
 
                     await paymentClient.RejectWithdrawAsync(

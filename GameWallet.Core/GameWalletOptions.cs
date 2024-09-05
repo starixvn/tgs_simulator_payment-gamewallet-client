@@ -5,5 +5,7 @@ public class GameWalletOptions
 
     public required Uri PaymentApiUrl { get; set; }
 
+    public required Uri DepositUrl { get; set; } 
+
     public required Uri PaymentServiceBaseUrl { get; set; }
 }

@@ -11,8 +11,8 @@
 	  <Company>Lumi</Company>
 	  <PackageId>Payment.GameWallet.Client</PackageId>
 	  <Title>Payment.GameWallet.Client</Title>
-	  <PackageProjectUrl>https://git3.nexdev.net/tgs/simulator/payment-bigpayz-client</PackageProjectUrl>
-	  <RepositoryUrl>https://git3.nexdev.net/tgs/simulator/payment-bigpayz-client.git</RepositoryUrl>
+	  <PackageProjectUrl>https://git3.nexdev.net/tgs/simulator/payment-gamewallet-client</PackageProjectUrl>
+	  <RepositoryUrl>https://git3.nexdev.net/tgs/simulator/payment-gamewallet-client.git</RepositoryUrl>
 	  <PackageTags>Payment GameWallet</PackageTags>
   </PropertyGroup>
 

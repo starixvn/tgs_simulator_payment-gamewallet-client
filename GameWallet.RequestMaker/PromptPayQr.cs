@@ -14,7 +14,7 @@ internal class PromptPayQr : IDepositHandler
             ["client_url"] = "",
             ["HTTPPostURL"] = new Uri(order.CallbackUrl, "promptpay").AbsoluteUri,
             ["amount"] = order.Amount.ToString(),
-            ["currency_code"] = settings.Currency,
+            ["currency_code"] = settings.CurrencyCode,
             ["ref_id"] = order.FormId.ToString(),
             ["player_ip"] = "127.0.0.1",
             ["player_username"] = order.PlayerId,

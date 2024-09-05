@@ -2,4 +2,4 @@
 public record GameWalletWithdrawResponse(
     Guid FormId,
     string ThirdPartyOrderNo,
-    decimal MerchantBalance);
+    decimal ActualAmount);

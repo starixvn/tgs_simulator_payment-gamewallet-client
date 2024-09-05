@@ -34,8 +34,8 @@ builder.Services
     .AddControllers();
 
 builder.Services
-    .AddBigPayz(
-        options => builder.Configuration.GetSection("BigPayz").Bind(options),
+    .AddGameWallet(
+        options => builder.Configuration.GetSection("GameWallet").Bind(options),
         clientBuilder => clientBuilder
             .ConfigureHttpClient((sp, http) =>
             {
@@ -44,7 +44,6 @@ builder.Services
                 http.BaseAddress = options.PaymentApiUrl;
             })
             .AddLoggingHandler<GameWalletOptions>())
-    .AddBigPayzDepositHandler()
     .AddPaymentClient()
     .AddPaymentServiceClient(httpBuilder => httpBuilder
         .ConfigureHttpClient((sp, http) =>
@@ -67,20 +66,20 @@ builder.Services
         .ConfigureResolveConnection(sp => sp.GetRequiredKeyedService<NatsConnection>("NatQueue"))
         .AddProcessor(
             ProcessorTypes.DepositProcessorType,
-            "tgs.payment.bigpayz.deposit",
-            "tgs.payment.bigpayz.deposit")
+            "tgs.payment.gamewallet.deposit",
+            "tgs.payment.gamewallet.deposit")
         .AddProcessor(
             ProcessorTypes.WithdrawProcessorType,
-            "tgs.payment.bigpayz.withdraw",
-            "tgs.payment.bigpayz.withdraw")
+            "tgs.payment.gamewallet.withdraw",
+            "tgs.payment.gamewallet.withdraw")
         .AddHandler(
             ProcessorTypes.DepositTimeoutCheckHandlerType,
-            $"tgs.payment.bigpayz.deposit.schedule.reject",
-            $"tgs.payment.bigpayz.deposit.schedule.reject")
+            $"tgs.payment.gamewallet.deposit.schedule.reject",
+            $"tgs.payment.gamewallet.deposit.schedule.reject")
         .AddProcessor(
             ProcessorTypes.GetBalanceProcessorType,
-            "tgs.payment.bigpayz.balance",
-            "tgs.payment.bigpayz.balance"))
+            "tgs.payment.gamewallet.balance",
+            "tgs.payment.gamewallet.balance"))
     .AddNatsGlobPatternExchange("*");
 
 builder.Services
@@ -140,5 +139,5 @@ app.Use(async (context, next) =>
         _ = await stream.ReadToEndAsync().ConfigureAwait(false);
     }
 });
-SentrySdk.CaptureMessage($"Started result Tgs-BigPayz at {DateTime.Now.ToString()} at {Environment.MachineName}");
+SentrySdk.CaptureMessage($"Started result Tgs-GameWallet at {DateTime.Now} at {Environment.MachineName}");
 app.Run();

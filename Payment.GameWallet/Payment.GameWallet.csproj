@@ -31,7 +31,6 @@
 	
 	<ItemGroup>
 	  <ProjectReference Include="..\GameWallet.Core\GameWallet.Core.csproj" />
-	  <ProjectReference Include="..\GameWallet.RequestMaker\GameWallet.DepositHandler.csproj" />
 	</ItemGroup>
 	
 </Project>

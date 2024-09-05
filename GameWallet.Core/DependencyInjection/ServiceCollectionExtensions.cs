@@ -5,7 +5,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddBigPayz(
+    public static IServiceCollection AddGameWallet(
        this IServiceCollection services,
        Action<GameWalletOptions> configureOptions,
        Action<IHttpClientBuilder> ConfigureAiClient)

@@ -1,6 +1,6 @@
 variables:
- PUBLISH_NUGET: "false"
- PROJECT_FOLDER: BigPayz.Client
+ PUBLISH_NUGET: "true"
+ PROJECT_FOLDER: GameWallet.Client
 
 include:
  - project: ci/core-cicd

@@ -7,7 +7,7 @@
       "applicationUrl": "http://localhost:5180",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "OTEL_SERVICE_NAME": "Payment-BigPayz(local)",
+        "OTEL_SERVICE_NAME": "Payment-GameWallet(local)",
         "NODE_IP": "otel.rpgp.cc"
       }
     },
@@ -18,7 +18,7 @@
       "applicationUrl": "https://localhost:7219;http://+:5180",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "OTEL_SERVICE_NAME": "Payment-BigPayz(local)",
+        "OTEL_SERVICE_NAME": "Payment-GameWallet(local)",
         "NODE_IP": "otel.rpgp.cc"
       }
     },

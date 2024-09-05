@@ -7,19 +7,19 @@ FROM hub.lumigame.com/base/dotnet/core/sdk:8.0-alpine AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["nuget.config", "."]
-COPY ["Tgs.Payment.BigPayz/Tgs.Payment.BigPayz.csproj", "Tgs.Payment.BigPayz/"]
-COPY ["BigPayz.Core/BigPayz.Core.csproj", "BigPayz.Core/"]
-COPY ["BigPayz.Client/BigPayz.Client.csproj", "BigPayz.Client/"]
-RUN dotnet restore "./Tgs.Payment.BigPayz/./Tgs.Payment.BigPayz.csproj"
+COPY ["Payment.GameWallet/Payment.GameWallet.csproj", "Payment.GameWallet/"]
+COPY ["GameWallet.Core/GameWallet.Core.csproj", "GameWallet.Core/"]
+COPY ["GameWallet.Client/GameWallet.Client.csproj", "GameWallet.Client/"]
+RUN dotnet restore "./Payment.GameWallet/./Payment.GameWallet.csproj"
 COPY . .
-WORKDIR "/src/Tgs.Payment.BigPayz"
-RUN dotnet build "./Tgs.Payment.BigPayz.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/Payment.BigPayz"
+RUN dotnet build "./Payment.BigPayz.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Tgs.Payment.BigPayz.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./Payment.BigPayz.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Tgs.Payment.BigPayz.dll"]
+ENTRYPOINT ["dotnet", "Payment.BigPayz.dll"]
