@@ -28,16 +28,6 @@ builder.Logging
                 () => Environment.MachineName));
         });
     });
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-                      builder =>
-                      {
-                          builder.WithOrigins("http://example.com",
-                                              "http://www.contoso.com");
-                      });
-});
 builder.Services
     .AddControllers();
 
