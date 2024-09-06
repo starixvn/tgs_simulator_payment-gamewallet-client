@@ -5,6 +5,7 @@ using Tgs.Payment.Protos;
 using Payment.GameWallet.Client;
 using Valhalla.MessageQueue;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Payment.GameWallet.MessageQueue;
 
@@ -12,6 +13,7 @@ internal class DepositProcessor(
     GameWalletHasher hasher,
     IPaymentClient paymentClient,
     TimeProvider timeProvider,
+    ILogger<DepositProcessor> logger,
     IOptions<GameWalletOptions> optionsAccessor)
     : IMessageProcessor<DepositRequest, DepositResponse>
 {
@@ -51,6 +53,8 @@ internal class DepositProcessor(
         var key = hasher.ComputeMd5(string.Join("", content));
         dict["k"] = key;
         var param = hasher.EncodeParam(JsonSerializer.Serialize(dict));
+        logger.LogInformation("Param send: {params}", param);
+
         var applyInfo = new GameWalletDepositApplyInfo(
             settings,
             new GameWalletDepositResponse(
