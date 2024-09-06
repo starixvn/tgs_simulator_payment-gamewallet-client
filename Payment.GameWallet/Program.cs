@@ -28,6 +28,13 @@ builder.Logging
                 () => Environment.MachineName));
         });
     });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader());
+});
 builder.Services
     .AddControllers();
 
@@ -117,6 +124,7 @@ builder.Services
                 ext => httpContext.Request.Path.Value.EndsWith($".{ext}")));
 
 var app = builder.Build();
+app.UseCors("AllowAll");
 app.UsePathBase($"{builder.Configuration.GetValue<string>("PathBase")}");
 app.UseHttpLogging();
 app.MapControllers();
@@ -137,6 +145,6 @@ app.Use(async (context, next) =>
         _ = await stream.ReadToEndAsync().ConfigureAwait(false);
     }
 });
-app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+
 SentrySdk.CaptureMessage($"Started result Tgs-GameWallet at {DateTime.Now} at {Environment.MachineName}");
 app.Run();
