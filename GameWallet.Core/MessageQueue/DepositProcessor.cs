@@ -48,7 +48,7 @@ internal class DepositProcessor(
             ["c3"]=settings.ClientIP,
             ["mt"]=settings.Method,
         };
-
+        logger.LogInformation("Request send: {dict}", dict);
         string[] content = [dict["m"], dict["r"], dict["c2"], dict["a"], dict["c1"], datetime.ToString("yyyyMMddHHmmss"), settings.MerchantSecurityCode, dict["c3"]];
         var key = hasher.ComputeMd5(string.Join("", content));
         dict["k"] = key;
