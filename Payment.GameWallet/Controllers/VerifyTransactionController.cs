@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OpenTelemetry.Resources;
 using Payment.GameWallet.ApplicationServices;
 using Payment.GameWallet.ViewModels;
 using Tgs.ServiceUtility;
@@ -10,7 +9,7 @@ namespace Payment.GameWallet.Controllers;
 [ApiController]
 public class VerifyTransactionController(ILogger<VerifyTransactionController> logger) : ControllerBase
 {
-    [HttpPost("callback", Name = "NotifyDeposit")]
+    [HttpPost("verify", Name = "VerifyTransaction")]
     [Consumes("application/json")]
     public async Task<IActionResult> VerifyTransactionAsync(
         [FromServices] GameWalletHasher hasher,
