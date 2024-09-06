@@ -23,7 +23,7 @@ public class WithdrawController(ILogger<WithdrawController> logger) : Controller
         [FromServices] IGetService<GetWithdrawFormQuery, WithdrawForm?> getService,
         [FromServices] IPaymentServiceClient paymentServiceClient,
         [FromServices] IPaymentClient paymentClient,
-        [FromForm] CallbackWithdrawViewModel source)
+        [FromBody] CallbackWithdrawViewModel source)
     {
         _logger.LogInformation("{source}", source);
         var formId = Guid.Parse(source.Reference);

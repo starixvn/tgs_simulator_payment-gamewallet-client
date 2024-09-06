@@ -21,7 +21,7 @@ public class DepositController(ILogger<DepositController> logger,
     [HttpPost("callback", Name = "NotifyDeposit")]
     [Consumes("application/json")]
     public async Task<string> DepositCallbackAsync(
-        [FromForm] CallbackDepositViewModel source)
+        [FromBody] CallbackDepositViewModel source)
     {
         var keysHash = new string[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode};
 
