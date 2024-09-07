@@ -6,6 +6,7 @@ using Payment.GameWallet.Client;
 using Valhalla.MessageQueue;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 
 namespace Payment.GameWallet.MessageQueue;
 
@@ -38,7 +39,7 @@ internal class DepositProcessor(
             ["b"]=settings.BankCode,
             ["c2"]= settings.Customer,
             ["r"]=settings.Reference.ToString(),
-            ["a"]= decimal.Parse(data.Amount).ToString("0.##"),
+            ["a"]= decimal.Parse(data.Amount).ToString("F", CultureInfo.InvariantCulture),
             ["n"]="Depsoit For Player",
             ["su"]=settings.SuccessUrl,
             ["fu"]=settings.FailUrl,

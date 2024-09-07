@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Globalization;
+using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Payment.GameWallet.Client;
 using Tgs.Payment.Clients;
@@ -33,7 +34,7 @@ internal class WithdrawProcessor(
             ["Bank"] = settings.BankCode,
             ["Customer"] = settings.Customer,
             ["Reference"] = settings.Reference.ToString(),
-            ["Amount"] = amount.ToString("0.##"),
+            ["Amount"] = amount.ToString("F", CultureInfo.InvariantCulture),
             ["Note"] = "Withdraw for player",
             ["AccountNumber"] = settings.AccountNumber,
             ["AccountName"] = settings.AccountName,
