@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 	  <RootNamespace>Payment.GameWallet.Client</RootNamespace>
 	  <SqlQueryToolsConnectionString />
-	  <Version>0.0.6</Version>
+	  <Version>0.0.7</Version>
 	  <Authors>Lumi</Authors>
 	  <Company>Lumi</Company>
 	  <PackageId>Payment.GameWallet.Client</PackageId>

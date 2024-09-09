@@ -7,10 +7,8 @@ public record GameWalletWithdrawSettings(
     string BankCode,
     string Customer,
     Guid Reference,
-    string Amount,
-    string Note,
+    decimal Amount,
     string AccountNumber,
     string AccountName,
-    string Datetime,
-    string CallbackUri,
+    DateTimeOffset Datetime,
     string MerchantSecurityCode);

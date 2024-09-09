@@ -39,7 +39,7 @@ internal class DepositProcessor(
             ["b"]=settings.BankCode,
             ["c2"]= settings.Customer,
             ["r"]=settings.Reference.ToString(),
-            ["a"]= decimal.Parse(data.Amount).ToString("F", CultureInfo.InvariantCulture),
+            ["a"]= decimal.Parse(data.Amount).ToString("0.00"),
             ["n"]="Depsoit For Player",
             ["su"]=settings.SuccessUrl,
             ["fu"]=settings.FailUrl,
