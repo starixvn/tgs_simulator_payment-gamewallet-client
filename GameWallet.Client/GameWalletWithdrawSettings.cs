@@ -10,5 +10,4 @@ public record GameWalletWithdrawSettings(
     decimal Amount,
     string AccountNumber,
     string AccountName,
-    DateTimeOffset Datetime,
     string MerchantSecurityCode);
