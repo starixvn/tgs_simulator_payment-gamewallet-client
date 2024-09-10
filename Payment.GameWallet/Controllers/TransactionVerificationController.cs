@@ -17,6 +17,8 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
         [FromServices] IGetService<GetDepositFormQuery, DepositForm?> getService)
         //[FromBody] VerifyTransactionViewModel requestData)
     {
+        var request = await Request.BodyReader.ReadAsync();
+        logger.LogInformation("Verification has request: {request}", request);
         //logger.LogInformation("Verify Transaction: {requestData}", JsonSerializer.Serialize(requestData));
         //var formId = Guid.Parse(requestData.Reference);
 
