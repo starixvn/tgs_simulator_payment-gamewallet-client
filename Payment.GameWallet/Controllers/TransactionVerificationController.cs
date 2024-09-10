@@ -27,7 +27,7 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
         if (withdrawForm == null)
         {
             logger.LogWarning("Can't found withdraw form({id}).", formId);
-            return BadRequest();
+            return BadRequest($"Can't found reference {formId}");
         }
 
         string[] keysHash = [requestData.Merchant, requestData.Reference, requestData.Amount, withdrawForm!.ApplyInfo!.Settings.MerchantSecurityCode];
@@ -36,13 +36,16 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
         if (hash != requestData.Sign)
         {
             logger.LogWarning("Sign value invalid. input: {sign}, compute: {hash}", requestData.Sign, hash);
-            return BadRequest();
+            return BadRequest("Sign value invalid.");
         }
-        
-        if (decimal.Parse(requestData.Amount).ToString("0.00") != withdrawForm.Amount.ToString("0.00"))
+
+        var actualAmount = decimal.Parse(requestData.Amount).ToString("0.00");
+        var orderAmount = decimal.Parse(requestData.Amount).ToString("0.00");
+
+        if ( actualAmount != orderAmount)
         {
-            logger.LogWarning("Invalid Amount. FromForm: {orderAmount}, FromRequest: {actualAmount}", withdrawForm.Amount, requestData.Amount);
-            return BadRequest();
+            logger.LogWarning("Invalid Amount. FromForm: {orderAmount}, FromRequest: {actualAmount}", orderAmount, actualAmount);
+            return BadRequest($"Invalid Amount. FromForm: {orderAmount}, FromRequest: {actualAmount}");
         }
 
         return Ok();
