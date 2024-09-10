@@ -1,4 +1,6 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Nodes;
+using Json.More;
 using Microsoft.AspNetCore.Mvc;
 using Payment.GameWallet.ApplicationServices;
 using Payment.GameWallet.ViewModels;
@@ -17,7 +19,7 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
         [FromServices] IGetService<GetDepositFormQuery, DepositForm?> getService)
         //[FromBody] VerifyTransactionViewModel requestData)
     {
-        var request = await Request.BodyReader.ReadAsync();
+        var request = await Request.ReadFromJsonAsync<JsonNode>();
         logger.LogInformation("Verification has request: {request}", request);
         //logger.LogInformation("Verify Transaction: {requestData}", JsonSerializer.Serialize(requestData));
         //var formId = Guid.Parse(requestData.Reference);
