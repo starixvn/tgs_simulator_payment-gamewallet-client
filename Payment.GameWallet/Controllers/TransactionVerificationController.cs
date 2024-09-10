@@ -5,11 +5,11 @@ using Tgs.ServiceUtility;
 
 namespace Payment.GameWallet.Controllers;
 
-[Route("[controller]")]
+[Route("transaction-verification")]
 [ApiController]
-public class VerifyTransactionController(ILogger<VerifyTransactionController> logger) : ControllerBase
+public class TransactionVerificationController(ILogger<TransactionVerificationController> logger) : ControllerBase
 {
-    [HttpPost("verify", Name = "VerifyTransaction")]
+    [HttpPost(Name = "VerifyTransaction")]
     [Consumes("application/json")]
     public async Task<IActionResult> VerifyTransactionAsync(
         [FromServices] GameWalletHasher hasher,
@@ -38,7 +38,7 @@ public class VerifyTransactionController(ILogger<VerifyTransactionController> lo
             return BadRequest();
         }
         
-        if (decimal.Parse(requestData.Amount).ToString("0.##") != withdrawForm.Amount.ToString("0.##"))
+        if (decimal.Parse(requestData.Amount).ToString("0.00") != withdrawForm.Amount.ToString("0.00"))
         {
             logger.LogWarning("Invalid Amount. FromForm: {orderAmount}, FromRequest: {actualAmount}", withdrawForm.Amount, requestData.Amount);
             return BadRequest();
