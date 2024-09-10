@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Payment.GameWallet.ApplicationServices;
 using Payment.GameWallet.ViewModels;
 using Tgs.ServiceUtility;
@@ -16,7 +17,7 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
         [FromServices] IGetService<GetDepositFormQuery, DepositForm?> getService,
         [FromBody] VerifyTransactionViewModel requestData)
     {
-        logger.LogInformation("Verify Transaction: {requestData}", requestData);
+        logger.LogInformation("Verify Transaction: {requestData}", JsonSerializer.Serialize(requestData));
         var formId = Guid.Parse(requestData.Reference);
 
         var withdrawForm = await getService
