@@ -123,7 +123,11 @@ builder.Services
 var app = builder.Build();
 app.UseCors("AllowAll");
 app.UsePathBase($"{builder.Configuration.GetValue<string>("PathBase")}");
-app.UseHttpLogging();
+app.UseWhen(
+        context => !(context.Request.Path.StartsWithSegments("/healthz")
+                             && context.Response.StatusCode == 200) ,
+        builder => builder.UseHttpLogging()
+    );
 app.MapControllers();
 app.MapHealthChecks("/healthz");
 app.MapProfileViewer();

@@ -13,14 +13,13 @@ namespace Payment.GameWallet.Controllers;
 public class TransactionVerificationController(ILogger<TransactionVerificationController> logger) : ControllerBase
 {
     [HttpPost(Name = "VerifyTransaction")]
-    [Consumes("application/json")]
     public async Task<IActionResult> VerifyTransactionAsync(
         [FromServices] GameWalletHasher hasher,
         [FromServices] IGetService<GetDepositFormQuery, DepositForm?> getService)
         //[FromBody] VerifyTransactionViewModel requestData)
     {
-        var request = await Request.ReadFromJsonAsync<JsonNode>();
-        logger.LogInformation("Verification has request: {request}", request);
+        var rawRequestBody = await new StreamReader(Request.Body).ReadToEndAsync();
+        logger.LogInformation("Verification has request: {request}", rawRequestBody);
         //logger.LogInformation("Verify Transaction: {requestData}", JsonSerializer.Serialize(requestData));
         //var formId = Guid.Parse(requestData.Reference);
 
