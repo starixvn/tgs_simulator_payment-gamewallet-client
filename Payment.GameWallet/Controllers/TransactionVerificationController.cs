@@ -51,6 +51,6 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
         //    return BadRequest($"Invalid Amount. FromForm: {orderAmount}, FromRequest: {actualAmount}");
         //}
 
-        return Ok();
+        return Ok($"OK with request: {JsonSerializer.Serialize(request)}");
     }
 }
