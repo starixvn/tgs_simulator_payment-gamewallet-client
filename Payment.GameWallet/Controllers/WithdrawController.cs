@@ -64,9 +64,9 @@ public class WithdrawController(ILogger<WithdrawController> logger) : Controller
 
         var fsm = PaymentStateMachineFactory.CreateWithdrawStateMachine(withdrawForm.Status);
 
-        switch (source.StatusMessage)
+        switch (source.StatusCode)
         {
-            case "Success":
+            case "000":
                 if (fsm.CanFire(PaymentTrigger.PaymentWithdrawCompleted))
                 {
                     await fsm.FireAsync(PaymentTrigger.PaymentWithdrawCompleted).ConfigureAwait(false);
@@ -86,7 +86,7 @@ public class WithdrawController(ILogger<WithdrawController> logger) : Controller
 
                 break;
 
-            case "Reject":
+            case "001":
                 if (fsm.CanFire(PaymentTrigger.Reject))
                 {
                     await fsm.FireAsync(PaymentTrigger.Reject).ConfigureAwait(false);
