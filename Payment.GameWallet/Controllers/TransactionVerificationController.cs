@@ -14,7 +14,8 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
     [HttpPost("transaction-verification",Name = "VerifyTransaction")]
     [Consumes("application/json")]
     public async Task<IActionResult> VerifyTransactionAsync(
-        [FromServices] IGetService<GetWithdrawFormQuery, WithdrawForm?> getService,
+        [FromServices] GameWalletHasher hasher,
+        [FromServices] IGetService<GetWithdrawFormToVerifyQuery, WithdrawFormBeforeVerify?> getService,
         [FromBody] VerifyTransactionViewModel requestData)
     {
         logger.LogInformation("Verify Transaction: {requestData}", JsonSerializer.Serialize(requestData));
@@ -28,6 +29,18 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
         {
             logger.LogWarning("Can't found withdraw form({id}).", formId);
             return BadRequest($"Can't found reference {formId}");
+        }
+
+        var key = withdrawForm?.ApplyInfo?.MerchantSecurityCode
+            ?? throw new InvalidOperationException("Can't not get key, please try withdraw again");
+
+        string[] keysHash = [requestData.Merchant, requestData.Reference, requestData.Amount, key];
+        var hash = hasher.ComputeMd5(string.Join("", keysHash));
+
+        if (hash != requestData.Sign)
+        {
+            logger.LogWarning("Sign value invalid. input: {sign}, compute: {hash}", requestData.Sign, hash);
+            return BadRequest("Sign value invalid.");
         }
 
         var actualAmount = decimal.Parse(requestData.Amount).ToString("0.00");
