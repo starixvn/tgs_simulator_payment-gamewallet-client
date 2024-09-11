@@ -3,16 +3,13 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Payment.GameWallet;
 
 public class GameWalletClient(
     HttpClient httpClient,
-    IOptions<GameWalletOptions> optionsAccessor,
     ILogger<GameWalletClient> logger)
 {
-    private readonly GameWalletOptions _options = optionsAccessor.Value;
 
     public async ValueTask<JsonNode> WithdrawAsync(Dictionary<string,string> content, CancellationToken cancellationToken = default)
     {   
@@ -34,12 +31,9 @@ public class GameWalletClient(
 
         var node = JsonNode.Parse(body) ?? throw new ApiFailException("Withdraw response can't read.");
 
-        if (node["statusCode"]!.GetValue<string>() != "002")
-            throw new ApiFailException($"Error in Payment Provider with status {node["statusMessage"]!.GetValue<string>()}");
-
-        logger.LogInformation("GameWalletClient Withdraw Body:{body}", body);
-
-        return node;
+        return node["statusCode"]!.GetValue<string>() != "002"
+            ? throw new ApiFailException($"Error in Payment Provider with status {node["statusMessage"]!.GetValue<string>()}")
+            : node;
     }
 
 
