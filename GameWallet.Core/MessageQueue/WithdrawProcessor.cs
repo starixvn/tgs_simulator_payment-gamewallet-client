@@ -52,7 +52,7 @@ internal class WithdrawProcessor(
 
         var applyInfo = new GameWalletWithdrawApplyInfo(
             settings,
-            new GameWalletWithdrawResponse(Guid.Parse(withdrawResponse["Reference"]!.GetValue<string>()),
+            new GameWalletWithdrawResponse(Guid.Parse(withdrawResponse["reference"]!.GetValue<string>()),
                                         withdrawResponse["transactionId"]!.GetValue<string>(),
                                         decimal.Parse(withdrawResponse["actualAmount"]!.GetValue<string>())));
 

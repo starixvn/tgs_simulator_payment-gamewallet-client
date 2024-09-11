@@ -6,11 +6,12 @@ using Tgs.ServiceUtility;
 
 namespace Payment.GameWallet.Controllers;
 
-[Route("transaction-verification")]
+[Route("")]
 [ApiController]
 public class TransactionVerificationController(ILogger<TransactionVerificationController> logger) : ControllerBase
 {
-    [HttpPost(Name = "VerifyTransaction")]
+    [HttpPost("transaction-verfification", Name = "VerifyTransaction1")]
+    [HttpPost("transaction-verification",Name = "VerifyTransaction")]
     [Consumes("application/json")]
     public async Task<IActionResult> VerifyTransactionAsync(
         [FromServices] GameWalletHasher hasher,
