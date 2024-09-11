@@ -25,17 +25,31 @@ public class DepositController(ILogger<DepositController> logger,
     {
         logger.LogInformation($"Received Callback. {JsonSerializer.Serialize(source)}");
         var keysHash = new string[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode};
+        var paymentReturn = new GameWalletDepositReturn();
 
-        var paymentReturn = new GameWalletDepositReturn()
+        try
         {
-            StatusCode = source.StatusCode,
-            FormId = Guid.Parse(source.Reference),
-            Transaction = source.TransactionId,
-            RealAmount = decimal.Parse(source.ActualAmount),
-            OrderAmount = decimal.Parse(source.Amount),
-            Key = source.Key,
-            ExtendData = JsonSerializer.Serialize(source)
-        };
+            paymentReturn = new GameWalletDepositReturn()
+            {
+                StatusCode = source.StatusCode,
+                FormId = Guid.Parse(source.Reference),
+                Transaction = source.TransactionId,
+                RealAmount = decimal.Parse(source.ActualAmount),
+                OrderAmount = decimal.Parse(source.Amount),
+                Key = source.Key,
+                ExtendData = JsonSerializer.Serialize(source)
+            };
+        }
+        catch (Exception ex) 
+        {
+            logger.LogError("Error: {ex}", ex);
+
+            return JsonSerializer.Serialize(new
+            {
+                error = ex.ToString(),
+
+            });
+        }
 
         return await HandleDepositCallBackAsync(paymentReturn, keysHash).ConfigureAwait(false);
     }
