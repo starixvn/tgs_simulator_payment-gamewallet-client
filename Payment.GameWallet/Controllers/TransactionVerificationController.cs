@@ -15,7 +15,7 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
     [Consumes("application/json")]
     public async Task<IActionResult> VerifyTransactionAsync(
         [FromServices] GameWalletHasher hasher,
-        [FromServices] IGetService<GetWithdrawFormToVerifyQuery, WithdrawFormBeforeVerify?> getService,
+        [FromServices] IGetService<GetWithdrawFormQuery, WithdrawForm?> getService,
         [FromBody] VerifyTransactionViewModel requestData)
     {
         logger.LogInformation("Verify Transaction: {requestData}", JsonSerializer.Serialize(requestData));
@@ -31,7 +31,7 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
             return BadRequest($"Can't found reference {formId}");
         }
 
-        var key = withdrawForm?.ApplyInfo?.MerchantSecurityCode
+        var key = withdrawForm?.ApplyInfo?.Settings?.MerchantSecurityCode
             ?? throw new InvalidOperationException("Can't not get key, please try withdraw again");
 
         string[] keysHash = [requestData.Merchant, requestData.Reference, requestData.Amount, key];

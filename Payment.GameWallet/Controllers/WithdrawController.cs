@@ -24,7 +24,7 @@ public class WithdrawController(ILogger<WithdrawController> logger) : Controller
         [FromServices] IPaymentClient paymentClient,
         [FromBody] CallbackWithdrawViewModel source)
     {
-        _logger.LogInformation("{source}", source);
+        _logger.LogInformation("Withdraw callback received request: {source}", source);
         var formId = Guid.Parse(source.Reference);
 
         var withdrawForm = await getService
@@ -37,7 +37,10 @@ public class WithdrawController(ILogger<WithdrawController> logger) : Controller
             return "fail";
         }
 
-        var data = new string[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode, withdrawForm!.ApplyInfo!.Settings.MerchantSecurityCode };
+        var key = withdrawForm?.ApplyInfo?.Settings?.MerchantSecurityCode
+            ?? throw new InvalidOperationException("Can't not get key, please try withdraw again");
+
+        var data = new string[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode, key };
         var sign = source.Key;
         var hash = hasher.ComputeMd5(string.Join("", data));
 

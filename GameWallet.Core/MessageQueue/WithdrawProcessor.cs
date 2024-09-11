@@ -22,7 +22,8 @@ internal class WithdrawProcessor(
         IEnumerable<MessageHeaderValue>? headerValues,
         CancellationToken cancellationToken = default)
     {
-        var settings = JsonSerializer.Deserialize<GameWalletWithdrawSettings>(data.ApplyInfo, GameWalletUtility.SerializerOptions)!;
+        var preApplyInfo = JsonSerializer.Deserialize<GameWalletWithdrawApplyInfo>(data.ApplyInfo, GameWalletUtility.SerializerOptions)!;
+        var settings = preApplyInfo.Settings;
         var amount = decimal.Parse(data.Amount);
         var now = timeProvider.GetUtcNow();
 
