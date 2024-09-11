@@ -23,6 +23,7 @@ public class DepositController(ILogger<DepositController> logger,
     public async Task<string> DepositCallbackAsync(
         [FromBody] CallbackDepositViewModel source)
     {
+        logger.LogInformation($"Received Callback. {JsonSerializer.Serialize(source)}");
         var keysHash = new string[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode};
 
         var paymentReturn = new GameWalletDepositReturn()
