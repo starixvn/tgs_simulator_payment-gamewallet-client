@@ -15,7 +15,7 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
     [Consumes("application/json")]
     public async Task<IActionResult> VerifyTransactionAsync(
         [FromServices] GameWalletHasher hasher,
-        [FromServices] IGetService<GetDepositFormQuery, DepositForm?> getService,
+        [FromServices] IGetService<GetWithdrawFormQuery, WithdrawForm?> getService,
         [FromBody] VerifyTransactionViewModel requestData)
     {
         logger.LogInformation("Verify Transaction: {requestData}", JsonSerializer.Serialize(requestData));
