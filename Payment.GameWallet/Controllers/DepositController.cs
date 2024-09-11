@@ -24,6 +24,8 @@ public class DepositController(ILogger<DepositController> logger,
         [FromBody] CallbackDepositViewModel source)
     {
         var keysHash = new string[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode};
+        var extendedData = JsonSerializer.Serialize(source);
+        logger.LogInformation("Deposit Callback Receive: {source}", source);
 
         var paymentReturn = new GameWalletDepositReturn()
         {
@@ -33,7 +35,7 @@ public class DepositController(ILogger<DepositController> logger,
             RealAmount = decimal.Parse(source.ActualAmount),
             OrderAmount = decimal.Parse(source.Amount),
             Key = source.Key,
-            ExtendData = JsonSerializer.Serialize(source)
+            ExtendData = extendedData
         };
 
         return await HandleDepositCallBackAsync(paymentReturn, keysHash).ConfigureAwait(false);
