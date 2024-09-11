@@ -67,7 +67,7 @@ public class DepositController(ILogger<DepositController> logger,
 
         switch (paymentReturn.StatusCode)
         {
-            case "001":
+            case "006":
                 if (fsm.CanFire(PaymentTrigger.PaymentDepositCompleted))
                 {
                     await fsm.FireAsync(PaymentTrigger.PaymentDepositCompleted).ConfigureAwait(false);
