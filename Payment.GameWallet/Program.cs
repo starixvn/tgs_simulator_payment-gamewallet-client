@@ -92,9 +92,6 @@ builder.Services
     .AddHttpLogging(logging =>
     {
         logging.LoggingFields = HttpLoggingFields.All;
-        logging.MediaTypeOptions.AddText("application/x-www-form-urlencoded");
-        logging.MediaTypeOptions.AddText("text/html");
-        logging.MediaTypeOptions.AddText("multipart/form-data");
     })
     .AddHealthChecks()
     .Services
