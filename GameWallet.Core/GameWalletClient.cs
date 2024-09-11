@@ -27,12 +27,14 @@ public class GameWalletClient(
             .ConfigureAwait(false);
 
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        logger.LogInformation("GameWallet Withdraw Body:{body}", body);
+
         if (!response.IsSuccessStatusCode)
             throw new ApiFailException(body);
 
         var node = JsonNode.Parse(body) ?? throw new ApiFailException("Withdraw response can't read.");
 
-        if (node["status_code"]!.GetValue<string>() != "001")
+        if (node["statusCode"]!.GetValue<string>() != "002")
             throw new ApiFailException($"Error in Payment Provider with status {node["statusMessage"]!.GetValue<string>()}");
 
         logger.LogInformation("GameWalletClient Withdraw Body:{body}", body);
@@ -60,10 +62,7 @@ public class GameWalletClient(
 
         var node = JsonNode.Parse(body) ?? throw new ApiFailException("Query Merchant Balance response can't read.");
 
-        if (node["error_code"]!.GetValue<int>() != 0)
-            throw new ApiFailException(node["error_message"]!.GetValue<string>());
-
-        var balance = node["availableBalance"]!.GetValue<decimal>();
+        var balance = node["availableBalance"]?.GetValue<decimal>() ?? throw new ApiFailException("Query Merchant Balance response can't read availableBalance.");
 
         return balance;
     }

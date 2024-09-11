@@ -7,7 +7,7 @@ namespace Payment.GameWallet.MessageQueue;
 
 internal class GetBalanceProcessor(
     GameWalletHasher hasher,
-    GameWalletClient bigPayzClient)
+    GameWalletClient gameWalletClient)
     : IMessageProcessor<PaymentBalanceRequest, PaymentBalanceResponse>
 {
     public async ValueTask<PaymentBalanceResponse> HandleAsync(
@@ -27,7 +27,9 @@ internal class GetBalanceProcessor(
 
         var key = hasher.ComputeMd5(settings.SecurityCode);
 
-        var result = await bigPayzClient.QueryBalanceAsync(
+        dict["Key"] = key;
+
+        var result = await gameWalletClient.QueryBalanceAsync(
             dict,
             cancellationToken).ConfigureAwait(false);
 
