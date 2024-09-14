@@ -6,7 +6,6 @@ using Payment.GameWallet.ViewModels;
 using Tgs.Payment.Clients;
 using Tgs.ServiceUtility;
 
-
 namespace Payment.GameWallet.Controllers;
 
 [Route("[controller]")]
