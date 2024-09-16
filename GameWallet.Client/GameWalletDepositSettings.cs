@@ -10,4 +10,5 @@ public record GameWalletDepositSettings(
     string FailUrl,
     string Language,
     string ClientIP,
-    string Method);
+    string Method,
+    double ExpirationTime);

@@ -15,5 +15,13 @@ public record GameWalletDepositReturn
 
     public string Key { get; set; } = default!;
 
+    public string? SenderBankName { get; set; } = default!;
+
+    public string? SenderBankAccount { get; set; } = default!;
+
+    public string? ReceiveAccountName { get; set; } = default!;
+
+    public string? ReceiveBankAccount { get; set; } = default!;
+
     public string ExtendData { get; set; } = default!;
 }

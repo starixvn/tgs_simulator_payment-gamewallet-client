@@ -6,10 +6,9 @@ using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using Tgs.MessageQueue.Nats.Serializers;
 using Payment.GameWallet;
 using Payment.GameWallet.MessageQueue;
-using System;
+using Tgs.MessageQueue.Nats.Serializers;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseSentry();
