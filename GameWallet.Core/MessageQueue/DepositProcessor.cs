@@ -71,7 +71,7 @@ internal class DepositProcessor(
             DateTime.UtcNow.AddMinutes(settings.ExpirationTime),
             cancellationToken).ConfigureAwait(false);
 
-        LogApi(settings.Reference, param);
+        LogApi(settings.Reference, JsonSerializer.Serialize(dict));
 
         return new DepositResponse
         {
