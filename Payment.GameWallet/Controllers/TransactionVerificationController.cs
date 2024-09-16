@@ -77,7 +77,7 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
             ServerName = Environment.MachineName,
             TrackingId = formId
         };
-
+        
         tgsLog.LogApi(apiCall);
     }
 }

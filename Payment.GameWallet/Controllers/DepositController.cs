@@ -153,6 +153,7 @@ public class DepositController(ILogger<DepositController> logger,
             ServerName = Environment.MachineName,
             TrackingId = formId
         };
+        
         tgsLog.LogApi(apiCall);
     }
 }

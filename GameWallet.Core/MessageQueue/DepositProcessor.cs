@@ -100,6 +100,7 @@ internal class DepositProcessor(
             ServerName = Environment.MachineName,
             TrackingId = formId
         };
+        
         tgsLog.LogApi(apiCall);
     }
 }

@@ -96,6 +96,7 @@ public class GameWalletClient(
             ServerName = Environment.MachineName,
             TrackingId = formId
         };
+        
         tgsLog.LogApi(apiCall);
     }
 }
