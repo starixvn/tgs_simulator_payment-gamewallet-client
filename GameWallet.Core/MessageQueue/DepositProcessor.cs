@@ -41,7 +41,7 @@ internal class DepositProcessor(
             ["c2"] = settings.Customer,
             ["r"] = settings.Reference.ToString(),
             ["a"] = decimal.Parse(data.Amount).ToString("0.00"),
-            ["n"] = "Depsoit For Player",
+            ["n"] = "Deposit For Player",
             ["su"] = settings.SuccessUrl,
             ["fu"] = settings.FailUrl,
             ["d"] = datetime.ToString("yyyy-MM-dd HH:mm:sstt"),
@@ -68,7 +68,7 @@ internal class DepositProcessor(
         await paymentClient.ScheduleAsync(
             "tgs.payment.gamewallet.deposit.schedule.reject",
             settings.Reference,
-            DateTime.UtcNow.AddMinutes(settings.ExpirationTime),
+            DateTime.UtcNow.AddMinutes(settings.ExpirationTime == 0 ? 60D : settings.ExpirationTime),
             cancellationToken).ConfigureAwait(false);
 
         var response = JsonSerializer.Serialize(applyInfo, GameWalletUtility.SerializerOptions);

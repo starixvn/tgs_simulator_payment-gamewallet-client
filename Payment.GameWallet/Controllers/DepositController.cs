@@ -89,6 +89,7 @@ public class DepositController(ILogger<DepositController> logger,
                             paymentReturn,
                             GameWalletUtility.SerializerOptions),
                         actualAmount: paymentReturn.RealAmount,
+                        thirdPartyOrderNo: paymentReturn.Transaction,
                         cancellationToken: HttpContext.RequestAborted).ConfigureAwait(false);
 
                     await paymentClient.ApproveDepositAsync(
@@ -119,6 +120,7 @@ public class DepositController(ILogger<DepositController> logger,
                         paymentReturn: JsonSerializer.Serialize(
                             paymentReturn,
                             GameWalletUtility.SerializerOptions),
+                        thirdPartyOrderNo: paymentReturn.Transaction,
                         cancellationToken: HttpContext.RequestAborted).ConfigureAwait(false);
 
                     await paymentClient.RejectDepositAsync(
