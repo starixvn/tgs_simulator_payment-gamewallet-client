@@ -3,7 +3,7 @@ USER app
 WORKDIR /app
 EXPOSE 5000
 
-FROM hub.lumigame.com/base/dotnet/core/sdk:8.0-alpine AS build
+FROM hub.lumigame.com/base/dotnet/core/sdk:8.0-alpine AS builder
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["nuget.config", "."]
@@ -15,7 +15,7 @@ COPY . .
 WORKDIR "/src/Payment.GameWallet"
 RUN dotnet build "./Payment.GameWallet.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-FROM build AS publish
+FROM builder AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./Payment.GameWallet.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
