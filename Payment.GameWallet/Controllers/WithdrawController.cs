@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Payment.GameWallet.ApplicationServices;
 using Payment.GameWallet.Client;
 using Payment.GameWallet.ViewModels;
+using Tgs.Logging;
 using Tgs.Payment.Clients;
 using Tgs.ServiceUtility;
 
@@ -10,7 +11,7 @@ namespace Payment.GameWallet.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class WithdrawController(ILogger<WithdrawController> logger) : ControllerBase
+public class WithdrawController(ILogger<WithdrawController> logger, ITgsLog tgsLog) : ControllerBase
 {
     private readonly ILogger<WithdrawController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -22,6 +23,16 @@ public class WithdrawController(ILogger<WithdrawController> logger) : Controller
         [FromServices] IPaymentServiceClient paymentServiceClient,
         [FromServices] IPaymentClient paymentClient,
         [FromBody] CallbackWithdrawViewModel source)
+    {
+        var response = await HandleWithdrawCallbackAsync(hasher, getService, paymentServiceClient, paymentClient, source);
+
+        LogApi(Guid.Parse(source.Reference), JsonSerializer.Serialize(source), response);
+
+        return response;
+    }
+
+    private async Task<string> HandleWithdrawCallbackAsync(GameWalletHasher hasher, IGetService<GetWithdrawFormQuery, WithdrawForm?> getService,
+        IPaymentServiceClient paymentServiceClient, IPaymentClient paymentClient, CallbackWithdrawViewModel source)
     {
         _logger.LogInformation("Withdraw callback received request: {source}", source);
         var formId = Guid.Parse(source.Reference);
@@ -37,7 +48,7 @@ public class WithdrawController(ILogger<WithdrawController> logger) : Controller
         }
 
         var key = withdrawForm?.ApplyInfo?.Settings?.MerchantSecurityCode
-            ?? throw new InvalidOperationException("Can't not get key, please try withdraw again");
+                  ?? throw new InvalidOperationException("Can't not get key, please try withdraw again");
 
         var data = new string[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode, key };
         var sign = source.Key;
@@ -115,5 +126,29 @@ public class WithdrawController(ILogger<WithdrawController> logger) : Controller
         }
 
         return "success";
+    }
+
+    private void LogApi(Guid formId, string request, string response)
+    {
+        var ip = HttpContext?.Connection?.RemoteIpAddress;
+
+        var apiCall = new ApiLogEvent
+        {
+            ExecutionTimeMs = 0,
+            Ip = ip == null ? string.Empty : ip.ToString(),
+            Method = "POST",
+            Path = "/api/withdraw/callback",
+            Prefix = "",
+            RecordedOn = DateTimeOffset.Now,
+            RequestContent = request,
+            RequestHeaders = "",
+            ResponseCode = 400,
+            ResponseContent = response,
+            ResponseHeaders = "",
+            ServerName = Environment.MachineName,
+            TrackingId = formId
+        };
+
+        tgsLog.LogApi(apiCall);
     }
 }

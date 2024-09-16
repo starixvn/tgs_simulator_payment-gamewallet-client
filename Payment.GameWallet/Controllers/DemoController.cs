@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tgs.Logging;
 
 namespace Payment.GameWallet.Controllers;
 
@@ -8,7 +9,6 @@ namespace Payment.GameWallet.Controllers;
 [AllowAnonymous]
 public class DemoController : ControllerBase
 {
-
     [Route("success")]
     [HttpGet]
     public string Success()

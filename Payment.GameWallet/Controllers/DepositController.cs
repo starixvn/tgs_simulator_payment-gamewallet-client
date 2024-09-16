@@ -4,6 +4,7 @@ using Tgs.Payment.Clients;
 using Payment.GameWallet.ApplicationServices;
 using Payment.GameWallet.Client;
 using Payment.GameWallet.ViewModels;
+using Tgs.Logging;
 using Tgs.ServiceUtility;
 
 namespace Payment.GameWallet.Controllers;
@@ -15,7 +16,9 @@ public class DepositController(ILogger<DepositController> logger,
     IGetService<GetDepositFormQuery,
     DepositForm?> getService,
     IPaymentServiceClient paymentServiceClient,
-    IPaymentClient paymentClient) : ControllerBase
+    IPaymentClient paymentClient,
+    ITgsLog tgsLog
+    ) : ControllerBase
 {
 
     [HttpPost("callback", Name = "NotifyDeposit")]
@@ -23,7 +26,7 @@ public class DepositController(ILogger<DepositController> logger,
     public async Task<string> DepositCallbackAsync(
         [FromBody] CallbackDepositViewModel source)
     {
-        var keysHash = new string[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode};
+        var keysHash = new string[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode };
         var extendedData = JsonSerializer.Serialize(source);
         logger.LogInformation("Deposit Callback Receive: {source}", source);
 
@@ -38,7 +41,11 @@ public class DepositController(ILogger<DepositController> logger,
             ExtendData = extendedData
         };
 
-        return await HandleDepositCallBackAsync(paymentReturn, keysHash).ConfigureAwait(false);
+        var response = await HandleDepositCallBackAsync(paymentReturn, keysHash).ConfigureAwait(false);
+
+        LogApi(paymentReturn.FormId, extendedData, response);
+
+        return response;
     }
 
     private async Task<string> HandleDepositCallBackAsync(GameWalletDepositReturn paymentReturn, IEnumerable<string> keysHash)
@@ -122,5 +129,28 @@ public class DepositController(ILogger<DepositController> logger,
         }
 
         return "success";
+    }
+
+    private void LogApi(Guid formId, string request, string response)
+    {
+        var ip = HttpContext?.Connection?.RemoteIpAddress;
+
+        var apiCall = new ApiLogEvent
+        {
+            ExecutionTimeMs = 0,
+            Ip = ip == null ? string.Empty : ip.ToString(),
+            Method = "POST",
+            Path = "/api/deposit/callback",
+            Prefix = "",
+            RecordedOn = DateTimeOffset.Now,
+            RequestContent = request,
+            RequestHeaders = "",
+            ResponseCode = 400,
+            ResponseContent = response,
+            ResponseHeaders = "",
+            ServerName = Environment.MachineName,
+            TrackingId = formId
+        };
+        tgsLog.LogApi(apiCall);
     }
 }
