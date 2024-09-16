@@ -109,7 +109,7 @@ public class DepositController(ILogger<DepositController> logger,
                     paymentReturn.Transaction,
                     paymentReturn.StatusMessage);
                 return "fail";
-
+            case "001":
             case "007":
                 if (fsm.CanFire(PaymentTrigger.Reject))
                 {
