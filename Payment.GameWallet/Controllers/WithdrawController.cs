@@ -31,8 +31,13 @@ public class WithdrawController(ILogger<WithdrawController> logger, ITgsLog tgsL
         return response;
     }
 
-    private async Task<string> HandleWithdrawCallbackAsync(GameWalletHasher hasher, IGetService<GetWithdrawFormQuery, WithdrawForm?> getService,
-        IPaymentServiceClient paymentServiceClient, IPaymentClient paymentClient, CallbackWithdrawViewModel source)
+    private async Task<string> HandleWithdrawCallbackAsync(
+        GameWalletHasher hasher,
+        IGetService<GetWithdrawFormQuery,
+        WithdrawForm?> getService,
+        IPaymentServiceClient paymentServiceClient,
+        IPaymentClient paymentClient,
+        CallbackWithdrawViewModel source)
     {
         _logger.LogInformation("Withdraw callback received request: {source}", source);
         var formId = Guid.Parse(source.Reference);
