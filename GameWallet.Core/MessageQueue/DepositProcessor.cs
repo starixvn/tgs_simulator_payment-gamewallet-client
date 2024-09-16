@@ -5,6 +5,8 @@ using Payment.GameWallet.Client;
 using Tgs.Payment.Clients;
 using Tgs.Payment.Protos;
 using Valhalla.MessageQueue;
+using Tgs.Logging;
+using System.Net.Http;
 
 namespace Payment.GameWallet.MessageQueue;
 
@@ -13,7 +15,8 @@ internal class DepositProcessor(
     IPaymentClient paymentClient,
     TimeProvider timeProvider,
     ILogger<DepositProcessor> logger,
-    IOptions<GameWalletOptions> optionsAccessor)
+    IOptions<GameWalletOptions> optionsAccessor,
+    ITgsLog tgsLog)
     : IMessageProcessor<DepositRequest, DepositResponse>
 {
     private readonly GameWalletOptions _options = optionsAccessor.Value;
@@ -68,9 +71,34 @@ internal class DepositProcessor(
             DateTime.UtcNow.AddMinutes(settings.ExpirationTime),
             cancellationToken).ConfigureAwait(false);
 
+        LogApi(settings.Reference, param);
+
         return new DepositResponse
         {
             Result = JsonSerializer.Serialize(applyInfo, GameWalletUtility.SerializerOptions)
         };
+    }
+
+    private void LogApi(Guid formId, string request)
+    {
+        var ip = Environment.MachineName;
+
+        var apiCall = new ApiLogEvent
+        {
+            ExecutionTimeMs = 0,
+            Ip = ip,
+            Method = "GET",
+            Path = "/Home/2.0/Deposit",
+            Prefix = _options.DepositUrl.ToString(),
+            RecordedOn = DateTimeOffset.Now,
+            RequestContent = request,
+            RequestHeaders = "",
+            ResponseCode = 400,
+            ResponseContent = "",
+            ResponseHeaders = "",
+            ServerName = Environment.MachineName,
+            TrackingId = formId
+        };
+        tgsLog.LogApi(apiCall);
     }
 }

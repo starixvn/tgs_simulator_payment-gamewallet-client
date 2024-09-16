@@ -3,13 +3,18 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Tgs.Logging;
 
 namespace Payment.GameWallet;
 
 public class GameWalletClient(
     HttpClient httpClient,
-    ILogger<GameWalletClient> logger)
+    IOptions<GameWalletOptions> optionsAccessor,
+    ILogger<GameWalletClient> logger,
+    ITgsLog tgsLog)
 {
+    private readonly GameWalletOptions _options = optionsAccessor.Value;
 
     public async ValueTask<JsonNode> WithdrawAsync(Dictionary<string,string> content, CancellationToken cancellationToken = default)
     {   
@@ -30,6 +35,11 @@ public class GameWalletClient(
             throw new ApiFailException(body);
 
         var node = JsonNode.Parse(body) ?? throw new ApiFailException("Withdraw response can't read.");
+
+        LogApi(Guid.Parse(content["Reference"]),
+            "/api/MerchantTransfer/withdraw",
+            JsonSerializer.Serialize(content),
+            body);
 
         return node["statusCode"]!.GetValue<string>() != "002"
             ? throw new ApiFailException($"Error in Payment Provider with status {node["statusMessage"]!.GetValue<string>()}")
@@ -58,7 +68,34 @@ public class GameWalletClient(
 
         var balance = node["availableBalance"]?.GetValue<decimal>() ?? throw new ApiFailException("Query Merchant Balance response can't read availableBalance.");
 
+        LogApi(Guid.Empty,
+            "/api/merchant/AvailableBalance", 
+            JsonSerializer.Serialize(content),
+            body);
         return balance;
     }
 
+
+    private void LogApi(Guid formId, string path, string request, string response)
+    {
+        var ip = Environment.MachineName;
+
+        var apiCall = new ApiLogEvent
+        {
+            ExecutionTimeMs = 0,
+            Ip = ip,
+            Method = "POST",
+            Path = path,
+            Prefix = _options.DepositUrl.ToString(),
+            RecordedOn = DateTimeOffset.Now,
+            RequestContent = request,
+            RequestHeaders = "",
+            ResponseCode = 400,
+            ResponseContent = response,
+            ResponseHeaders = "",
+            ServerName = Environment.MachineName,
+            TrackingId = formId
+        };
+        tgsLog.LogApi(apiCall);
+    }
 }
