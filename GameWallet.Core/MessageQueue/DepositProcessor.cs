@@ -71,15 +71,16 @@ internal class DepositProcessor(
             DateTime.UtcNow.AddMinutes(settings.ExpirationTime),
             cancellationToken).ConfigureAwait(false);
 
-        LogApi(settings.Reference, JsonSerializer.Serialize(dict));
+        var response = JsonSerializer.Serialize(applyInfo, GameWalletUtility.SerializerOptions);
+        LogApi(settings.Reference, JsonSerializer.Serialize(dict), response);
 
         return new DepositResponse
         {
-            Result = JsonSerializer.Serialize(applyInfo, GameWalletUtility.SerializerOptions)
+            Result = response
         };
     }
 
-    private void LogApi(Guid formId, string request)
+    private void LogApi(Guid formId, string request, string response)
     {
         var ip = Environment.MachineName;
 
@@ -94,7 +95,7 @@ internal class DepositProcessor(
             RequestContent = request,
             RequestHeaders = "",
             ResponseCode = 400,
-            ResponseContent = "",
+            ResponseContent = response,
             ResponseHeaders = "",
             ServerName = Environment.MachineName,
             TrackingId = formId
