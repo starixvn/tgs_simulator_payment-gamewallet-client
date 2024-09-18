@@ -1,5 +1,6 @@
 ﻿using FluentdForward.OpenTelemetry.MessagePack;
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using NATS.Client.Core;
 using OpenTelemetry.Instrumentation.AspNetCore;
@@ -27,6 +28,7 @@ builder.Logging
                 () => Environment.MachineName));
         });
     });
+builder.Services.AddMemoryCache();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder =>

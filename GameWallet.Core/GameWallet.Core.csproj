@@ -9,6 +9,7 @@
   </PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
@@ -18,7 +19,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="PhoenixToolkits.MessageQueue" Version="2.1.0" />
-
+		
     <PackageReference Include="Tgs.Logging" Version="0.0.22" />
 
     <PackageReference Include="Tgs.MessageQueue.Nats.Serializers" Version="0.0.2" />

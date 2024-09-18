@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Tgs.Logging;
@@ -9,15 +10,16 @@ using Tgs.Logging;
 namespace Payment.GameWallet;
 
 public class GameWalletClient(
-    HttpClient httpClient,
+    HttpClient httpClient, 
+    IMemoryCache memoryCache,
     IOptions<GameWalletOptions> optionsAccessor,
     ILogger<GameWalletClient> logger,
     ITgsLog tgsLog)
 {
     private readonly GameWalletOptions _options = optionsAccessor.Value;
 
-    public async ValueTask<JsonNode> WithdrawAsync(Dictionary<string,string> content, CancellationToken cancellationToken = default)
-    {   
+    public async ValueTask<JsonNode> WithdrawAsync(Dictionary<string, string> content, CancellationToken cancellationToken = default)
+    {
         var request = new HttpRequestMessage(HttpMethod.Post, "api/MerchantTransfer/withdraw")
         {
             Content = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, MediaTypeNames.Application.Json)
@@ -49,6 +51,11 @@ public class GameWalletClient(
 
     public async ValueTask<decimal> QueryBalanceAsync(Dictionary<string, string> content, CancellationToken cancellationToken = default)
     {
+        return await QueryBalanceFromCacheAsync(content, cancellationToken);
+    }
+
+    private async Task<decimal> QueryBalanceFromApiAsync(Dictionary<string, string> content, CancellationToken cancellationToken)
+    {
         var request = new HttpRequestMessage(HttpMethod.Post, "api/merchant/AvailableBalance")
         {
             Content = new StringContent(JsonSerializer.Serialize(content), Encoding.UTF8, MediaTypeNames.Application.Json)
@@ -68,13 +75,8 @@ public class GameWalletClient(
 
         var balance = node["availableBalance"]?.GetValue<decimal>() ?? throw new ApiFailException("Query Merchant Balance response can't read availableBalance.");
 
-        LogApi(Guid.Empty,
-            "/api/merchant/AvailableBalance", 
-            JsonSerializer.Serialize(content),
-            body);
         return balance;
     }
-
 
     private void LogApi(Guid formId, string path, string request, string response)
     {
@@ -96,7 +98,17 @@ public class GameWalletClient(
             ServerName = Environment.MachineName,
             TrackingId = formId
         };
-        
+
         tgsLog.LogApi(apiCall);
+    }
+
+    private async Task<decimal> QueryBalanceFromCacheAsync(Dictionary<string, string> content, CancellationToken cancellationToken)
+    {
+        var cacheKey = $"GAME-WALLET-BALANCE-{content["Key"]}";
+        return (await memoryCache.GetOrCreateAsync(cacheKey, async entry =>
+        {
+            entry.SetAbsoluteExpiration(TimeSpan.FromSeconds(30));
+            return await QueryBalanceFromApiAsync(content, cancellationToken);
+        }));
     }
 }
