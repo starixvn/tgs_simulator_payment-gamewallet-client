@@ -65,12 +65,15 @@ internal class DepositProcessor(
                 RedirectUrl: new Uri(_options.DepositUrl, $"Home/2.0/Deposit/?parameter={param}")
              ));
 
-        await paymentClient.ScheduleAsync(
+        if ( settings.BeExpirationTime >= 0) 
+        {
+            await paymentClient.ScheduleAsync(
             "tgs.payment.gamewallet.deposit.schedule.reject",
             settings.Reference,
-            DateTime.UtcNow.AddMinutes(settings.ExpirationTime == 0 ? 60D : settings.ExpirationTime),
+            DateTime.UtcNow.AddMinutes(settings.BeExpirationTime),
             cancellationToken).ConfigureAwait(false);
-
+        }
+     
         var response = JsonSerializer.Serialize(applyInfo, GameWalletUtility.SerializerOptions);
         LogApi(settings.Reference, JsonSerializer.Serialize(dict), response);
 

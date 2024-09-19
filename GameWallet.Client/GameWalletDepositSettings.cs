@@ -11,4 +11,5 @@ public record GameWalletDepositSettings(
     string Language,
     string ClientIP,
     string Method,
-    double ExpirationTime);
+    double FeExpirationTime = -1,
+    double BeExpirationTime = -1);
