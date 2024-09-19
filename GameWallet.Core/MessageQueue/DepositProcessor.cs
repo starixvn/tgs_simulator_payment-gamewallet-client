@@ -2,11 +2,10 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Payment.GameWallet.Client;
+using Tgs.Logging;
 using Tgs.Payment.Clients;
 using Tgs.Payment.Protos;
 using Valhalla.MessageQueue;
-using Tgs.Logging;
-using System.Net.Http;
 
 namespace Payment.GameWallet.MessageQueue;
 
@@ -65,15 +64,15 @@ internal class DepositProcessor(
                 RedirectUrl: new Uri(_options.DepositUrl, $"Home/2.0/Deposit/?parameter={param}")
              ));
 
-        if ( settings.BeExpirationTime >= 0) 
+        if (settings.BeExpirationTime.HasValue)
         {
             await paymentClient.ScheduleAsync(
             "tgs.payment.gamewallet.deposit.schedule.reject",
             settings.Reference,
-            DateTime.UtcNow.AddMinutes(settings.BeExpirationTime),
+            DateTime.UtcNow.AddMinutes(settings.BeExpirationTime.Value),
             cancellationToken).ConfigureAwait(false);
         }
-     
+
         var response = JsonSerializer.Serialize(applyInfo, GameWalletUtility.SerializerOptions);
         LogApi(settings.Reference, JsonSerializer.Serialize(dict), response);
 
@@ -103,7 +102,7 @@ internal class DepositProcessor(
             ServerName = Environment.MachineName,
             TrackingId = formId
         };
-        
+
         tgsLog.LogApi(apiCall);
     }
 }
