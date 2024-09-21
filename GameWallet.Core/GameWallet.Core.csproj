@@ -20,7 +20,7 @@
 		</PackageReference>
 		<PackageReference Include="PhoenixToolkits.MessageQueue" Version="2.1.0" />
 		
-    <PackageReference Include="Tgs.Logging" Version="0.0.22" />
+    <PackageReference Include="Tgs.Logging" Version="0.0.26" />
 
     <PackageReference Include="Tgs.MessageQueue.Nats.Serializers" Version="0.0.2" />
 		<PackageReference Include="Tgs.Payment.Client" Version="0.6.5" />

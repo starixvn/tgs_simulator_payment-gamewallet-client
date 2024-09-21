@@ -2,14 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Payment.GameWallet.ApplicationServices;
 using Payment.GameWallet.ViewModels;
-using Tgs.Logging;
+using Tgs.Logging.Extensions;
 using Tgs.ServiceUtility;
 
 namespace Payment.GameWallet.Controllers;
 
 [Route("transaction-verification")]
 [ApiController]
-public class TransactionVerificationController(ILogger<TransactionVerificationController> logger, ITgsLog tgsLog) : ControllerBase
+public class TransactionVerificationController(ILogger<TransactionVerificationController> logger) : ControllerBase
 {
     [HttpPost(Name = "VerifyTransaction")]
     [Consumes("application/json")]
@@ -20,6 +20,7 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
     {
         logger.LogInformation("Verify Transaction: {requestData}", JsonSerializer.Serialize(requestData));
         var formId = Guid.Parse(requestData.Reference);
+        HttpContext.AddTrackingId(formId);
 
         var withdrawForm = await getService
             .GetAsync(new(formId), HttpContext.RequestAborted)
@@ -52,32 +53,6 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
             return BadRequest($"Invalid Amount. FromForm: {orderAmount}, FromRequest: {actualAmount}");
         }
 
-        var request = JsonSerializer.Serialize(requestData);
-        LogApi(formId, request, "");
         return Ok();
-    }
-
-    private void LogApi(Guid formId, string request, string response)
-    {
-        var ip = HttpContext?.Connection?.RemoteIpAddress;
-
-        var apiCall = new ApiLogEvent
-        {
-            ExecutionTimeMs = 0,
-            Ip = ip == null ? string.Empty : ip.ToString(),
-            Method = "POST",
-            Path = "/api/transaction-verification",
-            Prefix = "",
-            RecordedOn = DateTimeOffset.Now,
-            RequestContent = request,
-            RequestHeaders = "",
-            ResponseCode = 400,
-            ResponseContent = response,
-            ResponseHeaders = "",
-            ServerName = Environment.MachineName,
-            TrackingId = formId
-        };
-        
-        tgsLog.LogApi(apiCall);
     }
 }

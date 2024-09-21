@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using Tgs.Payment.Clients;
 using Payment.GameWallet.ApplicationServices;
 using Payment.GameWallet.Client;
 using Payment.GameWallet.ViewModels;
-using Tgs.Logging;
+using Tgs.Logging.Extensions;
+using Tgs.Payment.Clients;
 using Tgs.ServiceUtility;
 
 namespace Payment.GameWallet.Controllers;
@@ -16,8 +16,7 @@ public class DepositController(ILogger<DepositController> logger,
     IGetService<GetDepositFormQuery,
     DepositForm?> getService,
     IPaymentServiceClient paymentServiceClient,
-    IPaymentClient paymentClient,
-    ITgsLog tgsLog
+    IPaymentClient paymentClient
     ) : ControllerBase
 {
 
@@ -42,11 +41,8 @@ public class DepositController(ILogger<DepositController> logger,
             Key = source.Key,
             ExtendData = extendedData
         };
-
+        HttpContext.AddTrackingId(paymentReturn.FormId);
         var response = await HandleDepositCallBackAsync(paymentReturn, keysHash).ConfigureAwait(false);
-
-        LogApi(paymentReturn.FormId, extendedData, response);
-
         return response;
     }
 
@@ -133,29 +129,5 @@ public class DepositController(ILogger<DepositController> logger,
         }
 
         return "success";
-    }
-
-    private void LogApi(Guid formId, string request, string response)
-    {
-        var ip = HttpContext?.Connection?.RemoteIpAddress;
-
-        var apiCall = new ApiLogEvent
-        {
-            ExecutionTimeMs = 0,
-            Ip = ip == null ? string.Empty : ip.ToString(),
-            Method = "POST",
-            Path = "/api/deposit/callback",
-            Prefix = "",
-            RecordedOn = DateTimeOffset.Now,
-            RequestContent = request,
-            RequestHeaders = "",
-            ResponseCode = 200,
-            ResponseContent = response,
-            ResponseHeaders = "",
-            ServerName = Environment.MachineName,
-            TrackingId = formId
-        };
-        
-        tgsLog.LogApi(apiCall);
     }
 }

@@ -10,7 +10,7 @@ using Tgs.Logging;
 namespace Payment.GameWallet;
 
 public class GameWalletClient(
-    HttpClient httpClient, 
+    HttpClient httpClient,
     IMemoryCache memoryCache,
     IOptions<GameWalletOptions> optionsAccessor,
     ILogger<GameWalletClient> logger,
@@ -32,16 +32,16 @@ public class GameWalletClient(
 
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         logger.LogInformation("GameWallet Withdraw Body:{body}", body);
+        LogApi(Guid.Parse(content["Reference"]),
+            "/api/MerchantTransfer/withdraw",
+            JsonSerializer.Serialize(content),
+
+            body, response);
 
         if (!response.IsSuccessStatusCode)
             throw new ApiFailException(body);
 
         var node = JsonNode.Parse(body) ?? throw new ApiFailException("Withdraw response can't read.");
-
-        LogApi(Guid.Parse(content["Reference"]),
-            "/api/MerchantTransfer/withdraw",
-            JsonSerializer.Serialize(content),
-            body);
 
         return node["statusCode"]!.GetValue<string>() != "002"
             ? throw new ApiFailException($"Error in Payment Provider with status {node["statusMessage"]!.GetValue<string>()}")
@@ -78,7 +78,7 @@ public class GameWalletClient(
         return balance;
     }
 
-    private void LogApi(Guid formId, string path, string request, string response)
+    private void LogApi(Guid formId, string path, string request, string response, HttpResponseMessage rawResponse)
     {
         var ip = Environment.MachineName;
 
@@ -91,10 +91,10 @@ public class GameWalletClient(
             Prefix = _options.DepositUrl.ToString(),
             RecordedOn = DateTimeOffset.Now,
             RequestContent = request,
-            RequestHeaders = "",
-            ResponseCode = 400,
+            RequestHeaders = string.Empty,
+            ResponseCode = ((short)rawResponse.StatusCode),
             ResponseContent = response,
-            ResponseHeaders = "",
+            ResponseHeaders = JsonSerializer.Serialize(rawResponse.Headers),
             ServerName = Environment.MachineName,
             TrackingId = formId
         };

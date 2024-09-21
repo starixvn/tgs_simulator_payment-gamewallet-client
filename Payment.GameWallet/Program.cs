@@ -9,6 +9,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Payment.GameWallet;
 using Payment.GameWallet.MessageQueue;
+using Tgs.Logging.DependencyInjection;
 using Tgs.MessageQueue.Nats.Serializers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -67,7 +68,7 @@ builder.Services
             Url = builder.Configuration.GetConnectionString("NatQueue")!,
             SerializerRegistry = TgsNatsSerializerRegistration.Default
         }))
-        .AddTgsLog()
+        .AddTgsLogWithHttpLogging(options => builder.Configuration.GetSection("TgsApiLog").Bind(options))
         .AddMessageQueue()
         .AddNatsMessageQueue(config => config
         .ConfigureResolveConnection(sp => sp.GetRequiredKeyedService<NatsConnection>("NatQueue"))
@@ -147,6 +148,6 @@ app.Use(async (context, next) =>
         _ = await stream.ReadToEndAsync().ConfigureAwait(false);
     }
 });
-
+app.UseTgsApiLoggerMiddleware();
 SentrySdk.CaptureMessage($"Started result Tgs-GameWallet at {DateTime.Now} at {Environment.MachineName}");
 app.Run();

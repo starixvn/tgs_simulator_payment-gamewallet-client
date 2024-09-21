@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Payment.GameWallet.ApplicationServices;
 using Payment.GameWallet.Client;
 using Payment.GameWallet.ViewModels;
-using Tgs.Logging;
+using Tgs.Logging.Extensions;
 using Tgs.Payment.Clients;
 using Tgs.ServiceUtility;
 
@@ -11,7 +11,7 @@ namespace Payment.GameWallet.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class WithdrawController(ILogger<WithdrawController> logger, ITgsLog tgsLog) : ControllerBase
+public class WithdrawController(ILogger<WithdrawController> logger) : ControllerBase
 {
     private readonly ILogger<WithdrawController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -26,8 +26,6 @@ public class WithdrawController(ILogger<WithdrawController> logger, ITgsLog tgsL
     {
         var response = await HandleWithdrawCallbackAsync(hasher, getService, paymentServiceClient, paymentClient, source);
 
-        LogApi(Guid.Parse(source.Reference), JsonSerializer.Serialize(source), response);
-
         return response;
     }
 
@@ -41,7 +39,7 @@ public class WithdrawController(ILogger<WithdrawController> logger, ITgsLog tgsL
     {
         _logger.LogInformation("Withdraw callback received request: {source}", source);
         var formId = Guid.Parse(source.Reference);
-
+        HttpContext.AddTrackingId(formId);
         var withdrawForm = await getService
             .GetAsync(new(formId), HttpContext.RequestAborted)
             .ConfigureAwait(false);
@@ -133,27 +131,4 @@ public class WithdrawController(ILogger<WithdrawController> logger, ITgsLog tgsL
         return "success";
     }
 
-    private void LogApi(Guid formId, string request, string response)
-    {
-        var ip = HttpContext?.Connection?.RemoteIpAddress;
-
-        var apiCall = new ApiLogEvent
-        {
-            ExecutionTimeMs = 0,
-            Ip = ip == null ? string.Empty : ip.ToString(),
-            Method = "POST",
-            Path = "/api/withdraw/callback",
-            Prefix = "",
-            RecordedOn = DateTimeOffset.Now,
-            RequestContent = request,
-            RequestHeaders = "",
-            ResponseCode = 400,
-            ResponseContent = response,
-            ResponseHeaders = "",
-            ServerName = Environment.MachineName,
-            TrackingId = formId
-        };
-        
-        tgsLog.LogApi(apiCall);
-    }
 }
