@@ -67,7 +67,7 @@ internal class WithdrawProcessor(
 
     private Dictionary<string, string> AddSignature(Dictionary<string, string> dict, GameWalletWithdrawSettings settings, DateTimeOffset now)
     {
-        var keysHash = new string[] { dict["Merchant"], dict["Reference"], dict["Customer"], dict["Amount"],
+        var keysHash = new[] { dict["Merchant"], dict["Reference"], dict["Customer"], dict["Amount"],
             dict["Currency"], now.ToString("yyyyMMddHHmmss"), settings.MerchantSecurityCode };
         var key = hasher.ComputeMd5(string.Join("", keysHash));
         dict["Key"] = key;

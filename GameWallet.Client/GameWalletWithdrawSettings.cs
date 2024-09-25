@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace Payment.GameWallet.Client;
+﻿namespace Payment.GameWallet.Client;
 public record GameWalletWithdrawSettings(
     string MerchantCode,
     string CurrencyCode,

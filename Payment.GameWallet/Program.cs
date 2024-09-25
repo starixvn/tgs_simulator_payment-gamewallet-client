@@ -8,7 +8,6 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Payment.GameWallet;
 using Payment.GameWallet.MessageQueue;
-using Tgs.Logging.DependencyInjection;
 using Tgs.MessageQueue.Nats.Serializers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,8 +30,8 @@ builder.Logging
 builder.Services.AddMemoryCache();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
-        builder.AllowAnyOrigin()
+    options.AddPolicy("AllowAll", b =>
+        b.AllowAnyOrigin()
                .AllowAnyMethod()
                .AllowAnyHeader());
 });
@@ -62,7 +61,7 @@ builder.Services
 builder.Services
     .AddKeyedSingleton(
         "NatQueue",
-        (sp, _) => new NatsConnection(NatsOpts.Default with
+        (_, _) => new NatsConnection(NatsOpts.Default with
         {
             Url = builder.Configuration.GetConnectionString("NatQueue")!,
             SerializerRegistry = TgsNatsSerializerRegistration.Default
@@ -112,7 +111,7 @@ builder.Services
         .AddHttpClientInstrumentation()
         .AddProfileViewExporter()
         .AddOtlpExporter())
-    .WithMetrics(meterBuiler => meterBuiler
+    .WithMetrics(m => m
         .AddRuntimeInstrumentation()
         .AddAspNetCoreInstrumentation()
         .AddOtlpExporter())
@@ -129,7 +128,7 @@ builder.Services
 var app = builder.Build();
 app.UseCors("AllowAll");
 app.UsePathBase($"{builder.Configuration.GetValue<string>("PathBase")}");
-app.UseWhen((context) => !(context.Request.Path.StartsWithSegments("/healthz") && context.Response.StatusCode == 200), (app) => app.UseHttpLogging());
+app.UseWhen(context => !(context.Request.Path.StartsWithSegments("/healthz") && context.Response.StatusCode == 200), a => a.UseHttpLogging());
 app.MapControllers();
 app.MapHealthChecks("/healthz");
 app.MapProfileViewer();

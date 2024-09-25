@@ -45,7 +45,7 @@ public class WithdrawController(ILogger<WithdrawController> logger) : Controller
         var formId = Guid.Parse(source.Reference);
         HttpContext.AddTrackingId(formId);
         var withdrawForm = await getService
-            .GetAsync(new(formId), HttpContext.RequestAborted)
+            .GetAsync(new GetWithdrawFormQuery(formId), HttpContext.RequestAborted)
             .ConfigureAwait(false);
 
         if (withdrawForm == null)
@@ -57,7 +57,7 @@ public class WithdrawController(ILogger<WithdrawController> logger) : Controller
         var key = withdrawForm.ApplyInfo?.Settings?.MerchantSecurityCode
                   ?? throw new InvalidOperationException("Can't not get key, please try withdraw again");
 
-        var data = new string[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode, key };
+        var data = new[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode, key };
         var sign = source.Key;
         var hash = hasher.ComputeMd5(string.Join("", data));
 
@@ -69,13 +69,13 @@ public class WithdrawController(ILogger<WithdrawController> logger) : Controller
             return "fail";
         }
 
-        var paymentReturn = new GameWalletWithdrawReturn()
+        var paymentReturn = new GameWalletWithdrawReturn
         {
             FormId = formId,
             ActualAmount = decimal.Parse(source.ActualAmount),
             Sign = sign,
             ThirdPartyOrderNo = source.TransactionId,
-            Status = source.StatusMessage,
+            Status = source.StatusMessage
 
         };
 

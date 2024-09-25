@@ -22,7 +22,7 @@ internal class GetBalanceProcessor(
 
         var dict = new Dictionary<string, string>
         {
-            ["Merchant"] = settings.MerchantCode,
+            ["Merchant"] = settings.MerchantCode
         };
 
         var key = hasher.ComputeMd5(settings.SecurityCode);

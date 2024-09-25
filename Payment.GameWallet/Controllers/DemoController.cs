@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Tgs.Logging;
 
 namespace Payment.GameWallet.Controllers;
 

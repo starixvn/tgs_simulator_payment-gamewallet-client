@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Payment.GameWallet.ApplicationServices;
 using Payment.GameWallet.Client;
 using Payment.GameWallet.ViewModels;
-using Tgs.Logging;
 using Tgs.Payment.Clients;
 using Tgs.ServiceUtility;
 
@@ -26,11 +25,11 @@ public class DepositController(ILogger<DepositController> logger,
         [FromServices] TgsLogHandler tgsLog,
         [FromBody] CallbackDepositViewModel source)
     {
-        var keysHash = new string[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode };
+        var keysHash = new[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode };
         var extendedData = JsonSerializer.Serialize(source);
         logger.LogInformation("Deposit Callback Receive: {Source}", source);
 
-        var paymentReturn = new GameWalletDepositReturn()
+        var paymentReturn = new GameWalletDepositReturn
         {
             StatusCode = source.StatusCode,
             FormId = Guid.Parse(source.Reference),
@@ -55,7 +54,7 @@ public class DepositController(ILogger<DepositController> logger,
         var formId = paymentReturn.FormId;
 
         var depositForm = await getService
-            .GetAsync(new(formId), HttpContext.RequestAborted)
+            .GetAsync(new GetDepositFormQuery(formId), HttpContext.RequestAborted)
             .ConfigureAwait(false);
 
         if (depositForm == null)

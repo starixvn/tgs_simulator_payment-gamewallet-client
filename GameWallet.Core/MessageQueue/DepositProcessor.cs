@@ -47,7 +47,7 @@ internal class DepositProcessor(
             ["c4"] = new Uri(_options.CallbackBaseUrl, "deposit/callback").ToString(),
             ["l"] = settings.Language,
             ["c3"] = settings.ClientIP,
-            ["mt"] = settings.Method,
+            ["mt"] = settings.Method
         };
         logger.LogInformation("Request send: {Dict}", dict);
         var param = AddSignature(dict, settings, datetime);

@@ -23,7 +23,7 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
         HttpContext.AddTrackingId(formId);
 
         var withdrawForm = await getService
-            .GetAsync(new(formId), HttpContext.RequestAborted)
+            .GetAsync(new GetWithdrawFormQuery(formId), HttpContext.RequestAborted)
             .ConfigureAwait(false);
 
         if (withdrawForm == null)
