@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Payment.GameWallet.ApplicationServices;
 using Payment.GameWallet.Client;
 using Payment.GameWallet.ViewModels;
-using Tgs.Logging.Extensions;
+using Tgs.Logging;
 using Tgs.Payment.Clients;
 using Tgs.ServiceUtility;
 
@@ -23,11 +23,12 @@ public class DepositController(ILogger<DepositController> logger,
     [HttpPost("callback", Name = "NotifyDeposit")]
     [Consumes("application/json")]
     public async Task<string> DepositCallbackAsync(
+        [FromServices] TgsLogHandler tgsLog,
         [FromBody] CallbackDepositViewModel source)
     {
         var keysHash = new string[] { source.Merchant, source.Reference, source.Customer, source.Amount, source.Currency, source.StatusCode };
         var extendedData = JsonSerializer.Serialize(source);
-        logger.LogInformation("Deposit Callback Receive: {source}", source);
+        logger.LogInformation("Deposit Callback Receive: {Source}", source);
 
         var paymentReturn = new GameWalletDepositReturn()
         {
@@ -41,8 +42,11 @@ public class DepositController(ILogger<DepositController> logger,
             Key = source.Key,
             ExtendData = extendedData
         };
-        HttpContext.AddTrackingId(paymentReturn.FormId);
+
         var response = await HandleDepositCallBackAsync(paymentReturn, keysHash).ConfigureAwait(false);
+
+        source.Key = string.Empty;
+        tgsLog.LogApi(HttpContext, source, response, paymentReturn.FormId);
         return response;
     }
 
@@ -56,17 +60,17 @@ public class DepositController(ILogger<DepositController> logger,
 
         if (depositForm == null)
         {
-            logger.LogWarning("Can't found deposit form({id}).", formId);
+            logger.LogWarning("Can't found deposit form({Id}).", formId);
             return "fail";
         }
 
         var hash = hasher.ComputeMd5(string.Join("", keysHash.Append(depositForm!.ApplyInfo!.Settings.MerchantSecurityCode)));
 
-        logger.LogInformation("Compute hash: {hash}, sign: {sign}", hash, paymentReturn.Key);
+        logger.LogInformation("Compute hash: {Hash}, sign: {Sign}", hash, paymentReturn.Key);
 
         if (paymentReturn.Key != hash)
         {
-            logger.LogWarning("Sign value invalid. input: {sign}, compute: {hash}", paymentReturn.Key, hash);
+            logger.LogWarning("Sign value invalid. input: {Sign}, compute: {Hash}", paymentReturn.Key, hash);
             return "fail";
         }
 
@@ -98,13 +102,6 @@ public class DepositController(ILogger<DepositController> logger,
                 break;
             case "009":
                 break;
-
-            default:
-                logger.LogWarning("FormId:{formId}, ThirdPartyOrderNo:{ThirdPartyOrderNo} , payment Status:{status}",
-                    formId,
-                    paymentReturn.Transaction,
-                    paymentReturn.StatusMessage);
-                return "fail";
             case "001":
             case "007":
                 if (fsm.CanFire(PaymentTrigger.Reject))
@@ -126,6 +123,12 @@ public class DepositController(ILogger<DepositController> logger,
                 }
 
                 break;
+            default:
+                logger.LogWarning("FormId:{FormId}, ThirdPartyOrderNo:{ThirdPartyOrderNo} , payment Status:{Status}",
+                    formId,
+                    paymentReturn.Transaction,
+                    paymentReturn.StatusMessage);
+                return "fail";
         }
 
         return "success";

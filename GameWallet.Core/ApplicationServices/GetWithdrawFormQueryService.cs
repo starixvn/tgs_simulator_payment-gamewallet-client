@@ -5,14 +5,9 @@ using Tgs.ServiceUtility;
 
 namespace Payment.GameWallet.ApplicationServices;
 
-internal class GetWithdrawFormQueryService : IGetService<GetWithdrawFormQuery, WithdrawForm?>
+internal class GetWithdrawFormQueryService(IPaymentServiceClient paymentServiceClient) : IGetService<GetWithdrawFormQuery, WithdrawForm?>
 {
-    private readonly IPaymentServiceClient _paymentServiceClient;
-
-    public GetWithdrawFormQueryService(IPaymentServiceClient paymentServiceClient)
-    {
-        _paymentServiceClient = paymentServiceClient ?? throw new ArgumentNullException(nameof(paymentServiceClient));
-    }
+    private readonly IPaymentServiceClient _paymentServiceClient = paymentServiceClient ?? throw new ArgumentNullException(nameof(paymentServiceClient));
 
     public async ValueTask<WithdrawForm?> GetAsync(GetWithdrawFormQuery query, CancellationToken cancellationToken = default)
     {
@@ -20,9 +15,16 @@ internal class GetWithdrawFormQueryService : IGetService<GetWithdrawFormQuery, W
             .GetWithdrawFormAsync(query.FormId, cancellationToken)
         .ConfigureAwait(false);
 
-        return data == null
-            ? null
-            : new WithdrawForm(
+        if (data == null)
+        {
+            return null;
+        }
+
+        var applyInfo = string.IsNullOrEmpty(data.ApplyInfo)
+        ? null
+        : JsonSerializer.Deserialize<GameWalletWithdrawApplyInfo>(data.ApplyInfo, GameWalletUtility.SerializerOptions);
+
+        return new WithdrawForm(
                 data.Id,
                 data.UserId,
                 data.UserType,
@@ -31,9 +33,7 @@ internal class GetWithdrawFormQueryService : IGetService<GetWithdrawFormQuery, W
                 data.Amount,
                 data.Status,
                 data.BankInfoId,
-                string.IsNullOrEmpty(data.ApplyInfo)
-        ? null
-        : JsonSerializer.Deserialize<GameWalletWithdrawApplyInfo>(data.ApplyInfo, GameWalletUtility.SerializerOptions),
+                applyInfo,
                 data.PaymentReturn);
     }
 }

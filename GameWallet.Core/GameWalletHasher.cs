@@ -1,5 +1,4 @@
-﻿using System.Buffers.Text;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 using Microsoft.Extensions.Logging;
@@ -13,7 +12,7 @@ public class GameWalletHasher(ILogger<GameWalletHasher> logger)
     public string ComputeMd5(string content)
     {
 
-        _logger.LogTrace("FullText: {content}", content);
+        _logger.LogTrace("FullText: {Content}", content);
 
         var bytes = Encoding.UTF8.GetBytes(content);
         var md5 = MD5.HashData(bytes);
@@ -24,7 +23,7 @@ public class GameWalletHasher(ILogger<GameWalletHasher> logger)
 
     public string EncodeParam(string content)
     {
-        _logger.LogTrace("FullText: {plainText}", content);
+        _logger.LogTrace("FullText: {PlainText}", content);
 
         var based64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(content));
 
@@ -43,7 +42,7 @@ public class GameWalletHasher(ILogger<GameWalletHasher> logger)
     {
         var content = string.Join("", data);
 
-        _logger.LogTrace("FullText: {content}", content);
+        _logger.LogTrace("FullText: {Content}", content);
 
         var enc = Encoding.UTF8;
         var hmac = new HMACSHA256(enc.GetBytes(content));

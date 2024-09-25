@@ -18,7 +18,7 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
         [FromServices] IGetService<GetWithdrawFormQuery, WithdrawForm?> getService,
         [FromBody] VerifyTransactionViewModel requestData)
     {
-        logger.LogInformation("Verify Transaction: {requestData}", JsonSerializer.Serialize(requestData));
+        logger.LogInformation("Verify Transaction: {RequestData}", JsonSerializer.Serialize(requestData));
         var formId = Guid.Parse(requestData.Reference);
         HttpContext.AddTrackingId(formId);
 
@@ -28,11 +28,11 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
 
         if (withdrawForm == null)
         {
-            logger.LogWarning("Can't found withdraw form({id}).", formId);
+            logger.LogWarning("Can't found withdraw form({Id}).", formId);
             return BadRequest($"Can't found reference {formId}");
         }
 
-        var key = withdrawForm?.ApplyInfo?.Settings?.MerchantSecurityCode
+        var key = withdrawForm.ApplyInfo?.Settings?.MerchantSecurityCode
             ?? throw new InvalidOperationException("Can't not get key, please try withdraw again");
 
         string[] keysHash = [requestData.Merchant, requestData.Reference, requestData.Amount, key];
@@ -40,7 +40,7 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
 
         if (hash != requestData.Sign)
         {
-            logger.LogWarning("Sign value invalid. input: {sign}, compute: {hash}", requestData.Sign, hash);
+            logger.LogWarning("Sign value invalid. input: {Sign}, compute: {Hash}", requestData.Sign, hash);
             return BadRequest("Sign value invalid.");
         }
 
@@ -49,7 +49,7 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
 
         if ( actualAmount != orderAmount)
         {
-            logger.LogWarning("Invalid Amount. FromForm: {orderAmount}, FromRequest: {actualAmount}", orderAmount, actualAmount);
+            logger.LogWarning("Invalid Amount. FromForm: {OrderAmount}, FromRequest: {ActualAmount}", orderAmount, actualAmount);
             return BadRequest($"Invalid Amount. FromForm: {orderAmount}, FromRequest: {actualAmount}");
         }
 

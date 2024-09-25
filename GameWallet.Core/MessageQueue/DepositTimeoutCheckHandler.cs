@@ -35,14 +35,14 @@ internal class DepositTimeoutCheckHandler(
 
             if (depositForm is null)
             {
-                _logger.LogWarning("Deposit Form {request.FormId.ToGuid()} not found.", data.FormId.ToGuid());
+                _logger.LogWarning("Deposit Form {FormId} not found.", data.FormId.ToGuid());
                 return;
             }
 
             var brandId = depositForm.BrandId;
 
             _logger.LogInformation(
-                "GetDepositFormAsync Form Id:{depositForm.Id}, Brand Id:{brandId}, Status:{depositForm.Status}",
+                "GetDepositFormAsync Form Id:{DepositFormId}, Brand Id:{BrandId}, Status:{DepositFormStatus}",
                 depositForm.Id,
                 brandId,
                 depositForm.Status);

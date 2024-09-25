@@ -42,13 +42,10 @@ internal class WithdrawProcessor(
             ["CallbackUri"] = new Uri(_options.CallbackBaseUrl, "withdraw/callback").ToString()
         };
 
-        var keysHash = new string[] { dict["Merchant"], dict["Reference"], dict["Customer"], dict["Amount"],
-            dict["Currency"], now.ToString("yyyyMMddHHmmss"), settings.MerchantSecurityCode };
-        var key = hasher.ComputeMd5(string.Join("", keysHash));
-        dict["Key"] = key;
+        var param = AddSignature(dict, settings, now);
 
         var withdrawResponse = await gameWalletClient.WithdrawAsync(
-            dict,
+            param,
             cancellationToken).ConfigureAwait(false);
 
         var applyInfo = new GameWalletWithdrawApplyInfo(
@@ -66,5 +63,15 @@ internal class WithdrawProcessor(
         {
             Result = JsonSerializer.Serialize(applyInfo, GameWalletUtility.SerializerOptions)
         };
+    }
+
+    private Dictionary<string, string> AddSignature(Dictionary<string, string> dict, GameWalletWithdrawSettings settings, DateTimeOffset now)
+    {
+        var keysHash = new string[] { dict["Merchant"], dict["Reference"], dict["Customer"], dict["Amount"],
+            dict["Currency"], now.ToString("yyyyMMddHHmmss"), settings.MerchantSecurityCode };
+        var key = hasher.ComputeMd5(string.Join("", keysHash));
+        dict["Key"] = key;
+
+        return dict;
     }
 }

@@ -1,6 +1,6 @@
 ARG CI_REGISTRY_IMAGE
 
-FROM $CI_REGISTRY_IMAGE:builder as deps
+FROM $CI_REGISTRY_IMAGE:builder AS deps
 
 RUN mkdir -p /src/packages
 
@@ -23,11 +23,11 @@ COPY ["GameWallet.Client/GameWallet.Client.csproj", "GameWallet.Client/"]
 RUN dotnet restore -v n -r linux-x64 "./Payment.GameWallet/./Payment.GameWallet.csproj"
 COPY . .
 WORKDIR "/src/Payment.GameWallet"
-RUN dotnet build "./Payment.GameWallet.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./Payment.GameWallet.csproj" -c "$BUILD_CONFIGURATION" -o /app/build
 
 FROM builder AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish -r linux-x64 --self-contained false "./Payment.GameWallet.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish -r linux-x64 --self-contained false "./Payment.GameWallet.csproj" -c "$BUILD_CONFIGURATION" -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

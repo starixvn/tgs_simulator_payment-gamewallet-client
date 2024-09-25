@@ -49,12 +49,8 @@ internal class DepositProcessor(
             ["c3"] = settings.ClientIP,
             ["mt"] = settings.Method,
         };
-        logger.LogInformation("Request send: {dict}", dict);
-        string[] content = [dict["m"], dict["r"], dict["c2"], dict["a"], dict["c1"], datetime.ToString("yyyyMMddHHmmss"), settings.MerchantSecurityCode, dict["c3"]];
-        var key = hasher.ComputeMd5(string.Join("", content));
-        dict["k"] = key;
-        var param = hasher.EncodeParam(JsonSerializer.Serialize(dict));
-        logger.LogInformation("Param send: {params}", param);
+        logger.LogInformation("Request send: {Dict}", dict);
+        var param = AddSignature(dict, settings, datetime);
 
         var applyInfo = new GameWalletDepositApplyInfo(
             settings,
@@ -74,12 +70,24 @@ internal class DepositProcessor(
         }
 
         var response = JsonSerializer.Serialize(applyInfo, GameWalletUtility.SerializerOptions);
+
+        _ = dict.Remove("k");
         LogApi(settings.Reference, JsonSerializer.Serialize(dict), response);
 
         return new DepositResponse
         {
             Result = response
         };
+    }
+
+    private string AddSignature(Dictionary<string, string> dict,  GameWalletDepositSettings settings, DateTimeOffset datetime)
+    {
+        string[] content = [dict["m"], dict["r"], dict["c2"], dict["a"], dict["c1"], datetime.ToString("yyyyMMddHHmmss"), settings.MerchantSecurityCode, dict["c3"]];
+        var key = hasher.ComputeMd5(string.Join("", content));
+        dict["k"] = key;
+        var param = hasher.EncodeParam(JsonSerializer.Serialize(dict));
+        logger.LogInformation("Param send: {Params}", param);
+        return param;
     }
 
     private void LogApi(Guid formId, string request, string response)
@@ -96,7 +104,7 @@ internal class DepositProcessor(
             RecordedOn = DateTimeOffset.Now,
             RequestContent = request,
             RequestHeaders = "",
-            ResponseCode = 400,
+            ResponseCode = 200,
             ResponseContent = response,
             ResponseHeaders = "",
             ServerName = Environment.MachineName,

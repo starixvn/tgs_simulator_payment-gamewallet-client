@@ -1,6 +1,5 @@
 ﻿using FluentdForward.OpenTelemetry.MessagePack;
 using Microsoft.AspNetCore.HttpLogging;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using NATS.Client.Core;
 using OpenTelemetry.Instrumentation.AspNetCore;
@@ -68,7 +67,8 @@ builder.Services
             Url = builder.Configuration.GetConnectionString("NatQueue")!,
             SerializerRegistry = TgsNatsSerializerRegistration.Default
         }))
-        .AddTgsLogWithHttpLogging(options => builder.Configuration.GetSection("TgsApiLog").Bind(options))
+        .AddTgsLog()
+        .AddSingleton<TgsLogHandler>()
         .AddMessageQueue()
         .AddNatsMessageQueue(config => config
         .ConfigureResolveConnection(sp => sp.GetRequiredKeyedService<NatsConnection>("NatQueue"))
@@ -123,7 +123,7 @@ builder.Services
             && !httpContext.Request.Path.StartsWithSegments("/healthz")
             && !httpContext.Request.Path.StartsWithSegments("/metrics")
             && !httpContext.Request.Path.StartsWithSegments("/profiler/")
-            && !new[] { "html", "ico", "png", "jpg" }.Any(
+            && !new List<string> { "html", "ico", "png", "jpg" }.Exists(
                 ext => httpContext.Request.Path.Value.EndsWith($".{ext}")));
 
 var app = builder.Build();
@@ -148,6 +148,6 @@ app.Use(async (context, next) =>
         _ = await stream.ReadToEndAsync().ConfigureAwait(false);
     }
 });
-app.UseTgsApiLoggerMiddleware();
+
 SentrySdk.CaptureMessage($"Started result Tgs-GameWallet at {DateTime.Now} at {Environment.MachineName}");
-app.Run();
+await app.RunAsync();

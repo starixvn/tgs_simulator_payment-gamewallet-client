@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Payment.GameWallet.Client;
 
-public class GameWalletUtility
+public static class GameWalletUtility
 {
     public static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
     {

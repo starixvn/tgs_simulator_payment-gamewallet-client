@@ -15,6 +15,7 @@ public class DemoController : ControllerBase
     {
         return "OK";
     }
+
     [Route("failed")]
     [HttpGet]
     public string Failed()

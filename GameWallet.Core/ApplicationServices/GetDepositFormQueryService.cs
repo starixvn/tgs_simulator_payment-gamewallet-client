@@ -20,18 +20,23 @@ internal class GetDepositFormQueryService : IGetService<GetDepositFormQuery, Dep
             .GetDepositFormAsync(query.FormId, cancellationToken)
         .ConfigureAwait(false);
 
-        return data == null
-            ? null
-            : new DepositForm(
+        if (data == null)
+        {
+            return null;
+        }
+
+        var applyInfo = string.IsNullOrEmpty(data.ApplyInfo)
+                ? null
+                : JsonSerializer.Deserialize<GameWalletDepositApplyInfo>(data.ApplyInfo, GameWalletUtility.SerializerOptions);
+
+        return new DepositForm(
                 data.Id,
                 data.PlayerCode,
                 data.BrandId,
                 data.BrandPaymentId,
                 data.Amount,
                 data.Status,
-                string.IsNullOrEmpty(data.ApplyInfo)
-        ? null
-        : JsonSerializer.Deserialize<GameWalletDepositApplyInfo>(data.ApplyInfo, GameWalletUtility.SerializerOptions),
+                applyInfo,
                 data.PaymentReturn);
     }
 }

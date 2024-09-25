@@ -31,11 +31,12 @@ public class GameWalletClient(
             .ConfigureAwait(false);
 
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        logger.LogInformation("GameWallet Withdraw Body:{body}", body);
+        logger.LogInformation("GameWallet Withdraw Body:{Body}", body);
+
+        _ = content.Remove("k");
         LogApi(Guid.Parse(content["Reference"]),
             "/api/MerchantTransfer/withdraw",
             JsonSerializer.Serialize(content),
-
             body, response);
 
         if (!response.IsSuccessStatusCode)
@@ -69,7 +70,7 @@ public class GameWalletClient(
 
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-        logger.LogInformation("GameWallet Query Merchant Balance Body:{body}", body);
+        logger.LogInformation("GameWallet Query Merchant Balance Body:{Body}", body);
 
         var node = JsonNode.Parse(body) ?? throw new ApiFailException("Query Merchant Balance response can't read.");
 
@@ -86,7 +87,7 @@ public class GameWalletClient(
         {
             ExecutionTimeMs = 0,
             Ip = ip,
-            Method = "POST",
+            Method = HttpMethod.Post.Method,
             Path = path,
             Prefix = _options.DepositUrl.ToString(),
             RecordedOn = DateTimeOffset.Now,
