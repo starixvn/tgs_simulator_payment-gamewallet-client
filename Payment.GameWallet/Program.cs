@@ -9,6 +9,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Payment.GameWallet;
+using Payment.GameWallet.DependencyInjection;
 using Payment.GameWallet.MessageQueue;
 using Tgs.MessageQueue.Nats.Serializers;
 

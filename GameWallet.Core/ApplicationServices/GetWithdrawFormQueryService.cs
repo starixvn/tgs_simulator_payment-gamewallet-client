@@ -5,7 +5,7 @@ using Tgs.ServiceUtility;
 
 namespace Payment.GameWallet.ApplicationServices;
 
-internal class GetWithdrawFormQueryService(IPaymentServiceClient paymentServiceClient) : IGetService<GetWithdrawFormQuery, WithdrawForm?>
+public class GetWithdrawFormQueryService(IPaymentServiceClient paymentServiceClient) : IGetService<GetWithdrawFormQuery, WithdrawForm?>
 {
     private readonly IPaymentServiceClient _paymentServiceClient = paymentServiceClient ?? throw new ArgumentNullException(nameof(paymentServiceClient));
 

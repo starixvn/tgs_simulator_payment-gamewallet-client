@@ -5,14 +5,9 @@ using Tgs.ServiceUtility;
 
 namespace Payment.GameWallet.ApplicationServices;
 
-internal class GetDepositFormQueryService : IGetService<GetDepositFormQuery, DepositForm?>
+public class GetDepositFormQueryService(IPaymentServiceClient paymentServiceClient) : IGetService<GetDepositFormQuery, DepositForm?>
 {
-    private readonly IPaymentServiceClient _paymentServiceClient;
-
-    public GetDepositFormQueryService(IPaymentServiceClient paymentServiceClient)
-    {
-        _paymentServiceClient = paymentServiceClient ?? throw new ArgumentNullException(nameof(paymentServiceClient));
-    }
+    private readonly IPaymentServiceClient _paymentServiceClient = paymentServiceClient ?? throw new ArgumentNullException(nameof(paymentServiceClient));
 
     public async ValueTask<DepositForm?> GetAsync(GetDepositFormQuery query, CancellationToken cancellationToken = default)
     {
