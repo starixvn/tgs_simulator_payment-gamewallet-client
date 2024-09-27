@@ -65,14 +65,14 @@ internal class DepositProcessor(
             await paymentClient.ScheduleAsync(
             "tgs.payment.gamewallet.deposit.schedule.reject",
             settings.Reference,
-            DateTime.UtcNow.AddMinutes(settings.BeExpirationTime.Value),
+            DateTimeOffset.UtcNow.DateTime.AddMinutes(settings.BeExpirationTime.Value),
             cancellationToken).ConfigureAwait(false);
         }
 
         var response = JsonSerializer.Serialize(applyInfo, GameWalletUtility.SerializerOptions);
 
         _ = dict.Remove("k");
-        LogApi(settings.Reference, JsonSerializer.Serialize(dict), response);
+        LogApi(settings.Reference, JsonSerializer.Serialize(dict), JsonSerializer.Serialize(applyInfo.Response, GameWalletUtility.SerializerOptions));
 
         return new DepositResponse
         {

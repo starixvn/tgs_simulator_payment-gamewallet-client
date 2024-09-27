@@ -1,4 +1,6 @@
-﻿using FluentdForward.OpenTelemetry.MessagePack;
+﻿using System.Net;
+using System.Net.Mime;
+using FluentdForward.OpenTelemetry.MessagePack;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.Options;
 using NATS.Client.Core;
@@ -94,9 +96,9 @@ builder.Services
     .AddHttpLogging(logging =>
     {
         logging.LoggingFields = HttpLoggingFields.All;
-        logging.MediaTypeOptions.AddText("application/x-www-form-urlencoded");
-        logging.MediaTypeOptions.AddText("text/html");
-        logging.MediaTypeOptions.AddText("multipart/form-data");
+        logging.MediaTypeOptions.AddText(MediaTypeNames.Application.FormUrlEncoded);
+        logging.MediaTypeOptions.AddText(MediaTypeNames.Text.Html);
+        logging.MediaTypeOptions.AddText(MediaTypeNames.Multipart.FormData);
     })
     .AddHealthChecks()
     .Services
@@ -117,18 +119,30 @@ builder.Services
         .AddOtlpExporter())
     .Services
     .Configure<AspNetCoreTraceInstrumentationOptions>(options => options.Filter =
-        httpContext => !httpContext.Request.Path.HasValue
-            || !httpContext.Request.Path.StartsWithSegments("/swagger")
-            && !httpContext.Request.Path.StartsWithSegments("/healthz")
-            && !httpContext.Request.Path.StartsWithSegments("/metrics")
-            && !httpContext.Request.Path.StartsWithSegments("/profiler/")
-            && !new List<string> { "html", "ico", "png", "jpg" }.Exists(
-                ext => httpContext.Request.Path.Value.EndsWith($".{ext}")));
+        httpContext =>
+        {
+            var path = httpContext.Request.Path;
+            if (!path.HasValue)
+            {
+                return true;
+            }
+
+            List<string> excludePaths = ["/swagger", "/healthz", "/metrics", "/profiler/"];
+
+            if (excludePaths.Exists(p => path.StartsWithSegments(p)))
+            {
+                return false;
+            } 
+
+            List<string> excludeExtensions = ["html", "ico", "png", "jpg"];
+
+            return !excludeExtensions.Exists(ext => path.Value.EndsWith($".{ext}"));
+        });
 
 var app = builder.Build();
 app.UseCors("AllowAll");
 app.UsePathBase($"{builder.Configuration.GetValue<string>("PathBase")}");
-app.UseWhen(context => !(context.Request.Path.StartsWithSegments("/healthz") && context.Response.StatusCode == 200), a => a.UseHttpLogging());
+app.UseWhen(context => !(context.Request.Path.StartsWithSegments("/healthz") && context.Response.StatusCode == ((int)HttpStatusCode.OK)), a => a.UseHttpLogging());
 app.MapControllers();
 app.MapHealthChecks("/healthz");
 app.MapProfileViewer();
@@ -148,5 +162,5 @@ app.Use(async (context, next) =>
     }
 });
 
-SentrySdk.CaptureMessage($"Started result Tgs-GameWallet at {DateTime.Now} at {Environment.MachineName}");
+SentrySdk.CaptureMessage($"Started result Tgs-GameWallet at {DateTimeOffset.Now.DateTime} at {Environment.MachineName}");
 await app.RunAsync();

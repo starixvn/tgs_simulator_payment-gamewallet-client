@@ -40,7 +40,9 @@ public class GameWalletClient(
             body, response);
 
         if (!response.IsSuccessStatusCode)
+        {
             throw new ApiFailException(body);
+        }    
 
         var node = JsonNode.Parse(body) ?? throw new ApiFailException("Withdraw response can't read.");
 
@@ -108,7 +110,7 @@ public class GameWalletClient(
         var cacheKey = $"GAME-WALLET-BALANCE-{content["Key"]}";
         return (await memoryCache.GetOrCreateAsync(cacheKey, async entry =>
         {
-            entry.SetAbsoluteExpiration(TimeSpan.FromSeconds(30));
+            _ = entry.SetAbsoluteExpiration(TimeSpan.FromSeconds(30));
             return await QueryBalanceFromApiAsync(content, cancellationToken);
         }));
     }
