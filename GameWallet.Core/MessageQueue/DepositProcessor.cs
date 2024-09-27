@@ -65,7 +65,7 @@ internal class DepositProcessor(
             await paymentClient.ScheduleAsync(
             "tgs.payment.gamewallet.deposit.schedule.reject",
             settings.Reference,
-            DateTimeOffset.UtcNow.DateTime.AddMinutes(settings.BeExpirationTime.Value),
+            DateTimeOffset.UtcNow.AddMinutes(settings.BeExpirationTime.Value).DateTime,
             cancellationToken).ConfigureAwait(false);
         }
 
