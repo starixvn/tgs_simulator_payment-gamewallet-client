@@ -71,7 +71,7 @@ internal class DepositTimeoutCheckHandler(
             await paymentClient.ScheduleAsync(
                 "tgs.payment.gamewallet.deposit.schedule.reject",
                 formId,
-                DateTimeOffset.UtcNow.DateTime.AddMinutes(TIME_DEPOSIT_RECHECK),
+                DateTimeOffset.UtcNow.AddMinutes(TIME_DEPOSIT_RECHECK).UtcDateTime,
                 cancellationToken).ConfigureAwait(false);
         }
     }
