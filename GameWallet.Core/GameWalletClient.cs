@@ -33,7 +33,7 @@ public class GameWalletClient(
         var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         logger.LogInformation("GameWallet Withdraw Body:{Body}", body);
 
-        _ = content.Remove("k");
+        _ = content.Remove("Key");
         LogApi(Guid.Parse(content["Reference"]),
             "/api/MerchantTransfer/withdraw",
             JsonSerializer.Serialize(content),

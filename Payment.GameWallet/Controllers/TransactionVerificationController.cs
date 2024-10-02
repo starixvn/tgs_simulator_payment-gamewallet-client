@@ -2,34 +2,42 @@
 using Microsoft.AspNetCore.Mvc;
 using Payment.GameWallet.ApplicationServices;
 using Payment.GameWallet.ViewModels;
-using Tgs.Logging.Extensions;
 using Tgs.ServiceUtility;
 
 namespace Payment.GameWallet.Controllers;
 
 [Route("transaction-verification")]
 [ApiController]
-public class TransactionVerificationController(ILogger<TransactionVerificationController> logger) : ControllerBase
+public class TransactionVerificationController(
+    ILogger<TransactionVerificationController> logger, 
+    GameWalletHasher hasher, 
+    IGetService<GetWithdrawFormQuery, WithdrawForm?> getService) : ControllerBase
 {
     [HttpPost(Name = "VerifyTransaction")]
     [Consumes("application/json")]
     public async Task<IActionResult> VerifyTransactionAsync(
-        [FromServices] GameWalletHasher hasher,
-        [FromServices] IGetService<GetWithdrawFormQuery, WithdrawForm?> getService,
+        [FromServices] TgsLogHandler tgsLog,
         [FromBody] VerifyTransactionViewModel requestData)
     {
         logger.LogInformation("Verify Transaction: {RequestData}", JsonSerializer.Serialize(requestData));
         var formId = Guid.Parse(requestData.Reference);
-        HttpContext.AddTrackingId(formId);
+        var (isSuccess, message) = await HandleVerifyTransactionAsync(requestData, formId).ConfigureAwait(false);
+        requestData.Sign = string.Empty;       
+        tgsLog.LogApi(HttpContext, requestData, message, formId);
+        return isSuccess ? Ok() : BadRequest(message) ;
+    }
 
+    private async Task<(bool isSuccess, string message)> HandleVerifyTransactionAsync(VerifyTransactionViewModel requestData, Guid formId)
+    {
+        
         var withdrawForm = await getService
-            .GetAsync(new GetWithdrawFormQuery(formId), HttpContext.RequestAborted)
-            .ConfigureAwait(false);
+                    .GetAsync(new GetWithdrawFormQuery(formId), HttpContext.RequestAborted)
+                    .ConfigureAwait(false);
 
         if (withdrawForm == null)
         {
             logger.LogWarning("Can't found withdraw form({Id}).", formId);
-            return BadRequest($"Can't found reference {formId}");
+            return (false, $"Can't found reference {formId}");
         }
 
         var key = withdrawForm.ApplyInfo?.Settings?.MerchantSecurityCode
@@ -41,18 +49,18 @@ public class TransactionVerificationController(ILogger<TransactionVerificationCo
         if (hash != requestData.Sign)
         {
             logger.LogWarning("Sign value invalid. input: {Sign}, compute: {Hash}", requestData.Sign, hash);
-            return BadRequest("Sign value invalid.");
+            return (false, "Sign value invalid.");
         }
 
         var actualAmount = decimal.Parse(requestData.Amount).ToString("0.00");
         var orderAmount = decimal.Parse(requestData.Amount).ToString("0.00");
 
-        if ( actualAmount != orderAmount)
+        if (actualAmount != orderAmount)
         {
             logger.LogWarning("Invalid Amount. FromForm: {OrderAmount}, FromRequest: {ActualAmount}", orderAmount, actualAmount);
-            return BadRequest($"Invalid Amount. FromForm: {orderAmount}, FromRequest: {actualAmount}");
+            return (false, $"Invalid Amount. FromForm: {orderAmount}, FromRequest: {actualAmount}");
         }
 
-        return Ok();
+        return (true, string.Empty);
     }
 }
