@@ -46,6 +46,8 @@ public class GameWalletClient(
 
         var node = JsonNode.Parse(body) ?? throw new ApiFailException("Withdraw response can't read.");
 
+        
+
         return node["statusCode"]!.GetValue<string>() != "002"
             ? throw new ApiFailException($"Error in Payment Provider with status {node["statusMessage"]!.GetValue<string>()}")
             : node;
@@ -83,6 +85,9 @@ public class GameWalletClient(
 
     private void LogApi(Guid formId, string path, string request, string response, HttpResponseMessage rawResponse)
     {
+        var responseData = JsonSerializer.Deserialize<Dictionary<string, JsonValue>>(response);
+        _ = responseData?.Remove("key");
+
         var ip = Environment.MachineName;
 
         var apiCall = new ApiLogEvent
@@ -96,7 +101,7 @@ public class GameWalletClient(
             RequestContent = request,
             RequestHeaders = string.Empty,
             ResponseCode = ((short)rawResponse.StatusCode),
-            ResponseContent = response,
+            ResponseContent = JsonSerializer.Serialize(responseData),
             ResponseHeaders = JsonSerializer.Serialize(rawResponse.Headers),
             ServerName = Environment.MachineName,
             TrackingId = formId
