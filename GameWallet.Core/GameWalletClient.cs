@@ -46,8 +46,6 @@ public class GameWalletClient(
 
         var node = JsonNode.Parse(body) ?? throw new ApiFailException("Withdraw response can't read.");
 
-        
-
         return node["statusCode"]!.GetValue<string>() != "002"
             ? throw new ApiFailException($"Error in Payment Provider with status {node["statusMessage"]!.GetValue<string>()}")
             : node;
