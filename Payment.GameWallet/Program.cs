@@ -44,14 +44,26 @@ builder.Services
 builder.Services
     .AddGameWallet(
         options => builder.Configuration.GetSection("GameWallet").Bind(options),
-        clientBuilder => clientBuilder
-            .ConfigureHttpClient((sp, http) =>
+        clientBuilder =>
+        {
+            _ = clientBuilder.ConfigureHttpClient((sp, http) =>
             {
                 var options = sp.GetRequiredService<IOptions<GameWalletOptions>>().Value;
 
                 http.BaseAddress = options.PaymentApiUrl;
             })
-            .AddLoggingHandler<GameWalletOptions>())
+            .AddLoggingHandler<GameWalletOptions>();
+
+            var proxy = builder.Configuration.GetValue<string>("Proxy");
+
+            if (proxy != null)
+            {
+                _ = clientBuilder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+                {
+                    Proxy = new WebProxy(proxy)
+                });
+            }
+        })
     .AddPaymentClient()
     .AddPaymentServiceClient(httpBuilder => httpBuilder
         .ConfigureHttpClient((sp, http) =>
@@ -133,7 +145,7 @@ builder.Services
             if (excludePaths.Exists(p => path.StartsWithSegments(p)))
             {
                 return false;
-            } 
+            }
 
             List<string> excludeExtensions = ["html", "ico", "png", "jpg"];
 
